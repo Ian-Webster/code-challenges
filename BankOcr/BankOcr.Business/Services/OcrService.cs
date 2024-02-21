@@ -5,6 +5,8 @@ namespace BankOcr.Business.Services;
 
 public class OcrService
 {
+    public const byte CharactersPerOcrRow = 85;
+
     /// <summary>
     /// Converts a single OCR "digit" to a number
     /// </summary>
@@ -93,6 +95,27 @@ public class OcrService
         }
 
         return result.ToString();
+    }
+
+    /// <summary>
+    /// Read the contents of OCR file and return a list of account numbers
+    /// </summary>
+    /// <remarks>
+    /// An OCR row consists of 85 characters, 9 characters for each digit (*9) and 4 newlines.
+    /// </remarks>
+    /// <param name="ocrFileContents"></param>
+    /// <returns></returns>
+    public List<string> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
+    {
+        var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
+        var result = new List<string>();
+        for (var ocrRowIndex = 0; ocrRowIndex < numberOfRows; ocrRowIndex++)
+        {
+            var ocrRow = ocrFileContents.Substring(ocrRowIndex * CharactersPerOcrRow, CharactersPerOcrRow);
+            result.Add(ConvertOcrNumberToAccountNumber(ocrRow));
+        }
+
+        return  result;
     }
 
     /// <summary>
