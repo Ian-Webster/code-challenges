@@ -10,7 +10,7 @@ public class OcrServiceBase
         return new OcrService();
     }
 
-    public static IEnumerable GetOcrTestData()
+    public static IEnumerable GetOcrDigitTestCaseData()
     {
         yield return new TestCaseData
         (
@@ -93,5 +93,88 @@ public class OcrServiceBase
             9
         );
     }
+
+    public static IEnumerable GetOcrNumberTestCaseData()
+    {
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "| || || || || || || || || |\n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n",
+            "000000000"
+        );
+        yield return new TestCaseData(
+            "                           \n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n",
+            "111111111"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            "\n",
+            "222222222"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "\n",
+            "333333333"
+        );
+        yield return new TestCaseData(
+            "                           \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n",
+            "444444444"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "\n",
+            "555555555"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n",
+            "666666666"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n",
+            "777777777"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n",
+            "888888888"
+        );
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "\n",
+            "999999999"
+        );
+        yield return new TestCaseData(
+            "    _  _     _  _  _  _  _ \n" +
+            "  | _| _||_||_ |_   ||_||_|\n" +
+            "  ||_  _|  | _||_|  ||_| _|\n" +
+            "\n",
+            "123456789"
+        );
+    }
+
+
 
 }

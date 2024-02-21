@@ -3,7 +3,7 @@
 [TestFixture]
 public class ConvertOcrDigitToNumber: OcrServiceBase
 {
-    [TestCaseSource(nameof(GetOcrTestData))]
+    [TestCaseSource(nameof(GetOcrDigitTestCaseData))]
     public void Should_Return_ExpectedDigit(string ocrString, int expectedDigit)
     {
         // Act

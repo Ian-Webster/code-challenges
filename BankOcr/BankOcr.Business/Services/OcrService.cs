@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System.Text;
 using BankOcr.Business.Enums;
 
 namespace BankOcr.Business.Services;
@@ -20,12 +20,12 @@ public class OcrService
     ///   |
     ///  _ 
     /// </remarks>
-    /// <param name="ocr">the digit to convert</param>
+    /// <param name="ocrDigit">the digit to convert</param>
     /// <returns>a short 0 - 9</returns>
-    public byte ConvertOcrDigitToNumber(string ocr)
+    public byte ConvertOcrDigitToNumber(string ocrDigit)
     {
-        var pipeCount = GetPipeCount(ocr);
-        var underscoreCount = GetUnderscoreCount(ocr);
+        var pipeCount = GetPipeCount(ocrDigit);
+        var underscoreCount = GetUnderscoreCount(ocrDigit);
 
         // there are four pipes - must be either 0 or 8
         if (pipeCount == 4)
@@ -37,7 +37,7 @@ public class OcrService
         if (pipeCount == 2 && underscoreCount == 1) return 7;
 
         // if the second character isn't a pipe must be  1 or 4
-        if (ocr[1] != '_')
+        if (ocrDigit[1] != '_')
         {
             return (byte)(pipeCount == 2 ? 1 : 4);
         }
@@ -45,7 +45,7 @@ public class OcrService
         // for the remaining digits we have to check the segments, counting pipes / underscores isn't 
         // enough to establish which digit we might have
 
-        var segments = ocr.Split("\n");
+        var segments = ocrDigit.Split("\n");
         var row2SegmentPositions = GetSegmentPositions(segments[1]);
         var row3SegmentPositions = GetSegmentPositions(segments[2]);
         if (pipeCount == 2 && underscoreCount == 3)
@@ -67,13 +67,47 @@ public class OcrService
         return row3SegmentPositions == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right) ? (byte)6 : (byte)9;
     }
 
+    /// <summary>
+    /// Converts a single "row" of OCR data to an account number
+    /// </summary>
+    /// <remarks>
+    /// An OCR "row" consists of 3 lines of 27 characters, each digit is 3 by 3 characters.
+    /// there is an additional blank line under each "row" of digits.
+    /// </remarks>
+    /// <param name="orcRow"></param>
+    /// <returns></returns>
+    public string ConvertOcrNumberToAccountNumber(string orcRow)
+    {
+        var rowSegments = orcRow.Split("\n");
+        var result = new StringBuilder();
+        var digitOcr = new StringBuilder();
+        for (var digitIndex = 0; digitIndex < 9; digitIndex++)
+        {
+            // read a digit from the row, we need i*3 characters from the first three lines
+            for (var lineIndex = 0; lineIndex < 3; lineIndex++)
+            {
+                digitOcr.Append($"{rowSegments[lineIndex].Substring(digitIndex * 3, 3)}\n");
+            }
+            result.Append(ConvertOcrDigitToNumber(digitOcr.ToString()));
+            digitOcr.Clear();
+        }
+
+        return result.ToString();
+    }
+
+    /// <summary>
+    /// Returns the segment positions for a given segment
+    /// </summary>
+    /// <param name="segment">segment to check</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     private SegmentPositions GetSegmentPositions(string segment)
     {
        return segment switch
        {
+           "|  " => SegmentPositions.Left,
            " _ " => SegmentPositions.Bottom,
            "  |" => SegmentPositions.Right,
-           "|  " => SegmentPositions.Left,
            "|_ " => SegmentPositions.Left | SegmentPositions.Bottom,
            "|_|" => SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right,
            " _|" => SegmentPositions.Bottom | SegmentPositions.Right,
@@ -81,11 +115,21 @@ public class OcrService
        };
     }
 
+    /// <summary>
+    /// Gets the count of pipes in the OCR string
+    /// </summary>
+    /// <param name="ocr"></param>
+    /// <returns></returns>
     private int GetPipeCount(string ocr)
     {
         return ocr.Count(c => c == '|');
     }
 
+    /// <summary>
+    /// Gets the count of underscores in the OCR string
+    /// </summary>
+    /// <param name="ocr"></param>
+    /// <returns></returns>
     private int GetUnderscoreCount(string ocr)
     {
         return ocr.Count(c => c == '_');
