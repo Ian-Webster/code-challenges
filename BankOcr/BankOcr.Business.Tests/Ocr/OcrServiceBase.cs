@@ -102,77 +102,77 @@ public class OcrServiceBase
             "|_||_||_||_||_||_||_||_||_|\n" +
             "\n",
             "000000000"
-        );
+        ).SetName("Zeros");
         yield return new TestCaseData(
             "                           \n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "\n",
             "111111111"
-        );
+        ).SetName("Ones");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             " _| _| _| _| _| _| _| _| _|\n" +
             "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
             "\n",
             "222222222"
-        );
+        ).SetName("Twos");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             " _| _| _| _| _| _| _| _| _|\n" +
             " _| _| _| _| _| _| _| _| _|\n" +
             "\n",
             "333333333"
-        );
+        ).SetName("Threes");
         yield return new TestCaseData(
             "                           \n" +
             "|_||_||_||_||_||_||_||_||_|\n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "\n",
             "444444444"
-        );
+        ).SetName("Fours");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
             " _| _| _| _| _| _| _| _| _|\n" +
             "\n",
             "555555555"
-        );
+        ).SetName("Fives");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
             "|_||_||_||_||_||_||_||_||_|\n" +
             "\n",
             "666666666"
-        );
+        ).SetName("Sixes");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "\n",
             "777777777"
-        );
+        ).SetName("Sevens");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "|_||_||_||_||_||_||_||_||_|\n" +
             "|_||_||_||_||_||_||_||_||_|\n" +
             "\n",
             "888888888"
-        );
+        ).SetName("Eights");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "|_||_||_||_||_||_||_||_||_|\n" +
             " _| _| _| _| _| _| _| _| _|\n" +
             "\n",
             "999999999"
-        );
+        ).SetName("Nines");
         yield return new TestCaseData(
             "    _  _     _  _  _  _  _ \n" +
             "  | _| _||_||_ |_   ||_||_|\n" +
             "  ||_  _|  | _||_|  ||_| _|\n" +
             "\n",
             "123456789"
-        );
+        ).SetName("One to nine");
     }
 
     public static IEnumerable GetOcrFileContentsTestCaseData()
@@ -183,7 +183,7 @@ public class OcrServiceBase
             "|_||_||_||_||_||_||_||_||_|\n" +
             "\n",
             new List<string> { "000000000" }
-        );
+        ).SetName("1 row");
         yield return new TestCaseData(
             "                           \n" +
             "  |  |  |  |  |  |  |  |  |\n" +
@@ -194,7 +194,7 @@ public class OcrServiceBase
             "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
             "\n",
             new List<string> { "111111111", "222222222" }
-        );
+        ).SetName("2 rows");
         yield return new TestCaseData(
             "                           \n" +
             "  |  |  |  |  |  |  |  |  |\n" +
@@ -209,7 +209,7 @@ public class OcrServiceBase
             " _| _| _| _| _| _| _| _| _|\n" +
             "\n",
             new List<string> { "111111111", "222222222", "333333333" }
-        );
+        ).SetName("3 rows");
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
             "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
@@ -228,6 +228,6 @@ public class OcrServiceBase
             "  ||_  _|  | _||_|  ||_| _|\n" +
             "\n",
             new List<string> { "666666666", "444444444", "999999999", "123456789" }
-        );
+        ).SetName("4 rows");
     }
 }

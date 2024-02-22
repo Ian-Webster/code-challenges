@@ -97,7 +97,7 @@ public class OcrService
         return result.ToString();
     }
 
-    /// <summary>
+    /// <summary>0
     /// Read the contents of OCR file and return a list of account numbers
     /// </summary>
     /// <remarks>

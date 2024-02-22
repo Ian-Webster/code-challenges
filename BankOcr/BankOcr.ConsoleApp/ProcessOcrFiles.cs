@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System.Reflection;
+using System.Text;
 using BankOcr.Business.Services;
 
 namespace BankOcr.ConsoleApp;
@@ -57,8 +58,29 @@ public class ProcessOcrFiles
         var filePath = Path.Combine(assemblyDirectory, "ocr-files", fileName);
         if (File.Exists(filePath))
         {
-            var fileContents = File.ReadAllText(filePath);
+            var fileContents = File.ReadAllText(filePath).Replace("\r\n", "\n");
             var accountNumbers = _orcService.GetAccountNumbersFromOcrFileContents(fileContents);
+
+            // Create a table
+            var table = new Table();
+
+            // Add some columns
+            table.AddColumn("Account number");
+
+            // Add some rows
+            accountNumbers.ForEach(accountNumber => table.AddRow(accountNumber));
+
+            // Render the table to the console
+            AnsiConsole.Write(table);
+
+            AnsiConsole.Markup("If you wish to load another file please press [green]space[/] otherwise press any other key to exist");
+
+            var key = Console.ReadKey();
+            if (key.Key == ConsoleKey.Spacebar)
+            {
+                Console.Clear();
+                MainMenu();
+            }
         }
         else
         {
