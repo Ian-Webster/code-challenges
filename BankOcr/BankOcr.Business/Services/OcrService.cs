@@ -96,11 +96,12 @@ public class OcrService
     /// </remarks>
     /// <param name="orcRow"></param>
     /// <returns></returns>
-    public AccountNumber ConvertOcrNumberToAccountNumber(string orcRow)
+    public AccountNumberRow ConvertOcrNumberToAccountNumber(string orcRow)
     {
         var rowSegments = orcRow.Split("\n");
         var accountNumber = new StringBuilder();
         var digitOcr = new StringBuilder();
+        var badDigits = new Dictionary<int, string>();
         for (var digitIndex = 0; digitIndex < 9; digitIndex++)
         {
             // read a digit from the row, we need i*3 characters from the first three lines
@@ -108,20 +109,67 @@ public class OcrService
             {
                 digitOcr.Append($"{rowSegments[lineIndex].Substring(digitIndex * 3, 3)}\n");
             }
-            accountNumber.Append(ConvertOcrDigitToNumber(digitOcr.ToString()));
+            var parsedDigit = ConvertOcrDigitToNumber(digitOcr.ToString());
+            if (parsedDigit == '?')
+            {
+                badDigits.Add(digitIndex, digitOcr.ToString());
+            }
+            accountNumber.Append(parsedDigit);
             digitOcr.Clear();
         }
 
-        var result = new AccountNumber { Number = accountNumber.ToString() };
-        if (result.Number.Contains('?'))
+        var result = new AccountNumberRow { Data = new AccountNumber { Number = accountNumber.ToString() } };
+
+        var guessedNumbers = new List<string>();
+        if (badDigits.Any())
         {
-            result.Status = "ILL";
+            // we found some bad digits, let's try to guess what they should be
+            foreach (var badDigit in badDigits)
+            {
+                // iterate each bad digit and generate possible valid digits
+                var possibleDigits = GuessOcrDigit(badDigit.Value);
+                foreach (var possibleDigit in possibleDigits)
+                {
+                    // replace the bad digit with the possible valid digit
+                    var replacementNumber = result.Data.Number.ToArray();
+                    replacementNumber[badDigit.Key] = possibleDigit;
+                    guessedNumbers.Add(new string(replacementNumber) );
+                }
+            }
+
+            if (guessedNumbers.Any())
+            {
+                // we managed to make some guesses
+                // check if any of them are a valid account number
+                var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
+                if (validAccounts != null && validAccounts.Any())
+                {
+                    // we got a valid match - replace the number with the valid match and return the data
+                    result.Data.Number = validAccounts.First();
+                    return result;
+                }
+
+                // none of the matches were valid, return with the possible matches and a state of ambiguous
+                result.PossibleMatches = guessedNumbers.Select(g => new AccountNumber { Number = g }).ToList();
+                result.Data.Status = "AMB";
+                return result;
+            }
+        }
+
+        // we either didn't have any bad digits or we couldn't guess any valid replacements
+
+        if (result.Data.Number.Contains('?'))
+        {
+            // invalid character and didn't guess any alternatives
+            result.Data.Status = "ILL";
             return result;
         }
 
-        if (_accountNumberService.AccountNumberIsValid(result.Number)) return result;
+        // check if the account number is valid - if it return
+        if (_accountNumberService.AccountNumberIsValid(result.Data.Number)) return result;
 
-        result.Status = "ERR";
+        // account number is invalid
+        result.Data.Status = "ERR";
         return result;
     }
 
@@ -133,10 +181,10 @@ public class OcrService
     /// </remarks>
     /// <param name="ocrFileContents"></param>
     /// <returns></returns>
-    public List<AccountNumber> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
+    public List<AccountNumberRow> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
     {
         var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
-        var result = new List<AccountNumber>();
+        var result = new List<AccountNumberRow>();
         for (var ocrRowIndex = 0; ocrRowIndex < numberOfRows; ocrRowIndex++)
         {
             var ocrRow = ocrFileContents.Substring(ocrRowIndex * CharactersPerOcrRow, CharactersPerOcrRow);
@@ -167,6 +215,14 @@ public class OcrService
        };
     }
 
+    /// <summary>
+    /// Parses the combination of segments set on the given digit and returns the matching number
+    /// </summary>
+    /// <remarks>
+    /// If the code fails to match to any digit will return null
+    /// </remarks>
+    /// <param name="digit"></param>
+    /// <returns></returns>
     private char? ParseOcrDigitSegments(OcrDigit digit)
     {
         // zero
@@ -253,12 +309,21 @@ public class OcrService
         return null;
     }
 
-    public List<OcrDigit> GenerateVariations(OcrDigit original)
+    /// <summary>
+    /// Generates possible variations for the given digit
+    /// </summary>
+    /// <remarks>
+    /// The variations will only ever by a single change from the original digit
+    /// Changes can be additions or subtractions to any one of the segments
+    /// </remarks>
+    /// <param name="original"></param>
+    /// <returns></returns>
+    private List<OcrDigit> GenerateVariations(OcrDigit original)
     {
         var variations = new List<OcrDigit>
         {
             // Generate variations for the top segment
-            new OcrDigit { Top = !original.Top, Middle = original.Middle, Bottom = original.Bottom }
+            new() { Top = !original.Top, Middle = original.Middle, Bottom = original.Bottom }
         };
 
         // Generate variations for the middle segment
@@ -301,22 +366,32 @@ public class OcrService
     }
 
     /// <summary>
-    /// Gets the count of pipes in the OCR string
+    /// Generates a list of alternative numbers replacing the given list of bad digits in the given account number
     /// </summary>
-    /// <param name="ocr"></param>
+    /// <remarks>
+    /// If this code fails to generate any alternative numbers will return null
+    /// </remarks>
+    /// <param name="badDigits"></param>
+    /// <param name="accountNumber"></param>
     /// <returns></returns>
-    private int GetPipeCount(string ocr)
+    private List<string>? GuessAlternativeAccountNumbers(Dictionary<int, string> badDigits, string accountNumber)
     {
-        return ocr.Count(c => c == '|');
-    }
+        var result = new List<string>();
 
-    /// <summary>
-    /// Gets the count of underscores in the OCR string
-    /// </summary>
-    /// <param name="ocr"></param>
-    /// <returns></returns>
-    private int GetUnderscoreCount(string ocr)
-    {
-        return ocr.Count(c => c == '_');
+        // try to guess some alternative numbers
+        foreach (var badDigit in badDigits)
+        {
+            // iterate each bad digit and generate possible valid digits
+            var possibleDigits = GuessOcrDigit(badDigit.Value);
+            foreach (var possibleDigit in possibleDigits)
+            {
+                // replace the bad digit with the possible valid digit
+                var replacementNumber = accountNumber.ToArray();
+                replacementNumber[badDigit.Key] = possibleDigit;
+                result.Add(new string(replacementNumber));
+            }
+        }
+        
+        return result.Any() ? result : null;
     }
 }

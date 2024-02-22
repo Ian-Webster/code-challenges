@@ -27,8 +27,8 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedOutPut, result.Number);
-        Assert.AreEqual(expectedStatus, result.Status);
+        Assert.AreEqual(expectedOutPut, result.Data.Number);
+        Assert.AreEqual(expectedStatus, result.Data.Status);
     }
 
     [TestCaseSource(nameof(GetAccountValidationTestCaseData))]
@@ -42,10 +42,10 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Number, Is.EqualTo(expectedOutPut));
+        Assert.That(result.Data.Number, Is.EqualTo(expectedOutPut));
         if (!isValid)
         {
-            Assert.That(result.Status, Is.EqualTo("ERR"));
+            Assert.That(result.Data.Status, Is.EqualTo("ERR"));
         }
     }
 
@@ -57,6 +57,6 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedAccountNumber, result.Number);
+        Assert.AreEqual(expectedAccountNumber, result.Data.Number);
     }
 }

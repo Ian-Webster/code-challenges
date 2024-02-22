@@ -422,4 +422,16 @@ public class OcrServiceBase
         ).SetName("Invalid #3 could be 3 or 5");
     }
 
+    public static IEnumerable GetAmbiguousOrcNumberTestCaseData()
+    {
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _    \n" +
+            "| || || || || || || ||_   |\n" +
+            "|_||_||_||_||_||_||_| _|  |\n" +
+            "\n",
+            "000000051",
+            "ERR"
+        ).SetName("Valid");
+    }
+
 }

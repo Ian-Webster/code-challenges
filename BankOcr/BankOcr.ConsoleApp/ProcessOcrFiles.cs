@@ -69,7 +69,7 @@ public class ProcessOcrFiles
             table.AddColumn("Status");
 
             // Add some rows
-            accountNumbers.ForEach(accountNumber => table.AddRow(accountNumber.Number, accountNumber.Status ?? string.Empty));
+            accountNumbers.ForEach(accountNumber => table.AddRow(accountNumber.Data.Number, accountNumber.Data.Status ?? string.Empty));
 
             // Render the table to the console
             AnsiConsole.Write(table);
