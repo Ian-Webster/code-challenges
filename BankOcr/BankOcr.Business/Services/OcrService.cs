@@ -101,7 +101,7 @@ public class OcrService
         var rowSegments = orcRow.Split("\n");
         var accountNumber = new StringBuilder();
         var digitOcr = new StringBuilder();
-        var badDigits = new Dictionary<int, string>();
+        var digits = new List<(int Index, string DigitOcr, bool IsBad)>();
         for (var digitIndex = 0; digitIndex < 9; digitIndex++)
         {
             // read a digit from the row, we need i*3 characters from the first three lines
@@ -109,38 +109,36 @@ public class OcrService
             {
                 digitOcr.Append($"{rowSegments[lineIndex].Substring(digitIndex * 3, 3)}\n");
             }
-            var parsedDigit = ConvertOcrDigitToNumber(digitOcr.ToString());
-            if (parsedDigit == '?')
-            {
-                badDigits.Add(digitIndex, digitOcr.ToString());
-            }
+            var ocrString = digitOcr.ToString();
+            var parsedDigit = ConvertOcrDigitToNumber(ocrString);
+            digits.Add((digitIndex, digitOcr.ToString(), parsedDigit == '?'));
             accountNumber.Append(parsedDigit);
             digitOcr.Clear();
         }
 
         var result = new AccountNumberRow { Data = new AccountNumber { Number = accountNumber.ToString() } };
 
-        var guessedNumbers = new List<string>();
-        if (badDigits.Any())
-        {
-            // we found some bad digits, let's try to guess what they should be
-            foreach (var badDigit in badDigits)
-            {
-                // iterate each bad digit and generate possible valid digits
-                var possibleDigits = GuessOcrDigit(badDigit.Value);
-                foreach (var possibleDigit in possibleDigits)
-                {
-                    // replace the bad digit with the possible valid digit
-                    var replacementNumber = result.Data.Number.ToArray();
-                    replacementNumber[badDigit.Key] = possibleDigit;
-                    guessedNumbers.Add(new string(replacementNumber) );
-                }
-            }
+        List<string>? guessedNumbers;
 
-            if (guessedNumbers.Any())
+        if (digits.Any(d => d.IsBad))
+        {
+            guessedNumbers = GuessAlternativeAccountNumbers(digits
+                .Where(d => d.IsBad)
+                .ToDictionary(key => key.Index, v => v.DigitOcr), 
+                result.Data.Number);
+
+            if (guessedNumbers != null)
             {
                 // we managed to make some guesses
-                // check if any of them are a valid account number
+                result = SetNumberGuesses(result, guessedNumbers);
+
+                // we found a single valid guess
+                if (result.Data.Status == "Ok") return result;
+
+                // we found multiple matches
+                if (result.Data.Status == "AMB") return result;
+
+                /*// check if any of them are a valid account number
                 var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
                 if (validAccounts != null && validAccounts.Any())
                 {
@@ -150,14 +148,15 @@ public class OcrService
                 }
 
                 // none of the matches were valid, return with the possible matches and a state of ambiguous
-                result.PossibleMatches = guessedNumbers.Select(g => new AccountNumber { Number = g }).ToList();
+                result.PossibleMatches = guessedNumbers;
                 result.Data.Status = "AMB";
-                return result;
+                return result;*/
             }
         }
 
         // we either didn't have any bad digits or we couldn't guess any valid replacements
 
+        // check if we had any invalid characters fall through the attempt to find alternatives
         if (result.Data.Number.Contains('?'))
         {
             // invalid character and didn't guess any alternatives
@@ -165,10 +164,25 @@ public class OcrService
             return result;
         }
 
-        // check if the account number is valid - if it return
+        // check if the account number is valid - if it is return
         if (_accountNumberService.AccountNumberIsValid(result.Data.Number)) return result;
 
         // account number is invalid
+        // have a go at guessing some alternatives and see if any of them are valid
+        guessedNumbers = GuessAlternativeAccountNumbers(digits.ToDictionary(key => key.Index, v => v.DigitOcr), result.Data.Number);
+        if (guessedNumbers != null)
+        {
+            // we managed to make some guesses
+            result = SetNumberGuesses(result, guessedNumbers);
+
+            // we found a single valid guess
+            if (result.Data.Status == "Ok") return result;
+
+            // we found multiple valid guesses
+            if (result.Data.Status == "AMB") return result;
+        }
+
+        // failed to guess any valid alternatives
         result.Data.Status = "ERR";
         return result;
     }
@@ -366,32 +380,60 @@ public class OcrService
     }
 
     /// <summary>
-    /// Generates a list of alternative numbers replacing the given list of bad digits in the given account number
+    /// Generates a list of alternative numbers replacing the given list of digits in the given account number
     /// </summary>
     /// <remarks>
     /// If this code fails to generate any alternative numbers will return null
     /// </remarks>
-    /// <param name="badDigits"></param>
+    /// <param name="digits"></param>
     /// <param name="accountNumber"></param>
     /// <returns></returns>
-    private List<string>? GuessAlternativeAccountNumbers(Dictionary<int, string> badDigits, string accountNumber)
+    private List<string>? GuessAlternativeAccountNumbers(Dictionary<int, string> digits, string accountNumber)
     {
         var result = new List<string>();
 
         // try to guess some alternative numbers
-        foreach (var badDigit in badDigits)
+        foreach (var digit in digits)
         {
-            // iterate each bad digit and generate possible valid digits
-            var possibleDigits = GuessOcrDigit(badDigit.Value);
+            // iterate each digit and generate possible valid digits
+            var possibleDigits = GuessOcrDigit(digit.Value);
             foreach (var possibleDigit in possibleDigits)
             {
                 // replace the bad digit with the possible valid digit
                 var replacementNumber = accountNumber.ToArray();
-                replacementNumber[badDigit.Key] = possibleDigit;
+                replacementNumber[digit.Key] = possibleDigit;
                 result.Add(new string(replacementNumber));
             }
         }
         
         return result.Any() ? result : null;
+    }
+
+    private AccountNumberRow SetNumberGuesses(AccountNumberRow data, List<string> guessedNumbers)
+    {
+        // check if any of them are a valid account number
+        var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
+
+        // didn't find any valid guesses
+        if (validAccounts == null || !validAccounts.Any()) return data;
+
+        if (validAccounts.Count == 1)
+        {
+            // we got a valid match - replace the number with the valid match and return the data
+            data.Data.Number = validAccounts.First();
+            data.Data.Status = "Ok";
+            return data;
+        }
+
+        // we got more than one valid guess - return with the possible matches and a state of ambiguous
+        data.PossibleMatches = validAccounts;
+        data.Data.Status = "AMB";
+        return data;
+
+        /*
+        // none of the matches were valid, return with the possible matches and a state of ambiguous
+        result.PossibleMatches = guessedNumbers;
+        result.Data.Status = "AMB";
+        return result;*/
     }
 }

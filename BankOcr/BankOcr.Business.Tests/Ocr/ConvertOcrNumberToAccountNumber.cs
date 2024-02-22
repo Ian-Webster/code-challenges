@@ -1,4 +1,6 @@
-﻿using NSubstitute;
+﻿using BankOcr.Business.Models;
+using Newtonsoft.Json;
+using NSubstitute;
 
 namespace BankOcr.Business.Tests.Ocr;
 
@@ -16,47 +18,17 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
         MockAccountNumberService.Received(1).AccountNumberIsValid(accountNumber);
     }
 
-    [TestCaseSource(nameof(GetInvalidNumberTestCaseData))]
-    public void Should_Return_InvalidAccountNumberStatus_When_OcrRowIsInValid(string orcRow, string expectedOutPut, string expectedStatus)
-    {
-        // Arrange
-        SetAccountNumberServiceValidation(false);
-
-        // Act
-        var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedOutPut, result.Data.Number);
-        Assert.AreEqual(expectedStatus, result.Data.Status);
-    }
-
-    [TestCaseSource(nameof(GetAccountValidationTestCaseData))]
-    public void Should_Return_ExpectedAccountNumberStatus(string orcRow, string expectedOutPut, bool isValid)
-    {
-        // Arrange
-        SetAccountNumberServiceValidation(isValid);
-
-        // Act
-        var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Data.Number, Is.EqualTo(expectedOutPut));
-        if (!isValid)
-        {
-            Assert.That(result.Data.Status, Is.EqualTo("ERR"));
-        }
-    }
-
     [TestCaseSource(nameof(GetOcrNumberTestCaseData))]
-    public void Should_Return_ExpectedAccountNumber_When_OrcRowIsValid(string orcRow, string expectedAccountNumber)
+    public void Should_Return_ExpectedAccountNumberStatus(string orcRow, AccountNumberRow expectedOutPut, List<string> validNumbers)
     {
+        // Arrange
+        SetAccountNumberServiceGetValidAccountNumbers(validNumbers);
+
         // Act
         var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedAccountNumber, result.Data.Number);
+        StringAssert.AreEqualIgnoringCase(JsonConvert.SerializeObject(expectedOutPut), JsonConvert.SerializeObject(result));
     }
 }
