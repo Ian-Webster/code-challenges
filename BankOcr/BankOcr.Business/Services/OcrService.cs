@@ -3,6 +3,9 @@ using BankOcr.Business.Enums;
 
 namespace BankOcr.Business.Services;
 
+/// <summary>
+/// Handles converting OCR data to account numbers
+/// </summary>
 public class OcrService
 {
     public const byte CharactersPerOcrRow = 85;
