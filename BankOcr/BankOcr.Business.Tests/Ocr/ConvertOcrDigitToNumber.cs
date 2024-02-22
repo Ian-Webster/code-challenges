@@ -4,7 +4,7 @@
 public class ConvertOcrDigitToNumber: OcrServiceBase
 {
     [TestCaseSource(nameof(GetOcrDigitTestCaseData))]
-    public void Should_Return_ExpectedDigit(string ocrString, int expectedDigit)
+    public void Should_Return_ExpectedDigit(string ocrString, char expectedDigit)
     {
         // Act
         var result = GetService().ConvertOcrDigitToNumber(ocrString);

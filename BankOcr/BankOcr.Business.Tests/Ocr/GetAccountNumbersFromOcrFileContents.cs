@@ -10,6 +10,6 @@ public class GetAccountNumbersFromOcrFileContents: OcrServiceBase
         var result = GetService().GetAccountNumbersFromOcrFileContents(ocrFileContents);
 
         // Assert
-        CollectionAssert.AreEqual(expectedAccountNumbers, result);
+        CollectionAssert.AreEqual(expectedAccountNumbers, result.Select(r => r.Number));
     }
 }

@@ -12,15 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ocr-files\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BankOcr.Business\BankOcr.Business.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ocr-files\usecase-1.txt">
+    <None Update="ocr-files\user-story-1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ocr-files\user-story-3.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

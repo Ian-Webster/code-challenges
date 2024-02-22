@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using BankOcr.Business.Enums;
+using BankOcr.Business.Models;
 
 namespace BankOcr.Business.Services;
 
@@ -27,9 +28,98 @@ public class OcrService
     /// </remarks>
     /// <param name="ocrDigit">the digit to convert</param>
     /// <returns>a short 0 - 9</returns>
-    public byte ConvertOcrDigitToNumber(string ocrDigit)
+    public char ConvertOcrDigitToNumber(string ocrDigit)
     {
-        var pipeCount = GetPipeCount(ocrDigit);
+        var segments = ocrDigit.Split("\n");
+        var segmentPosition0 = GetSegmentPositions(segments[0]);
+        var segmentPosition1 = GetSegmentPositions(segments[1]);
+        var segmentPosition2 = GetSegmentPositions(segments[2]);
+
+        // zero
+        if (segmentPosition0 == SegmentPositions.Bottom 
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Right)
+            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '0';
+        }
+
+        // one
+        if (segmentPosition0 == SegmentPositions.None
+            && segmentPosition1 == SegmentPositions.Right
+            && segmentPosition2 == SegmentPositions.Right)
+        {
+            return '1';
+        }
+
+        // two
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Bottom | SegmentPositions.Right)
+            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom))
+        {
+            return '2';
+        }
+
+        // three
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Bottom | SegmentPositions.Right)
+            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '3';
+        }
+
+        // four
+        if (segmentPosition0 == SegmentPositions.None
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
+            && segmentPosition2 == SegmentPositions.Right)
+        {
+            return '4';
+        }
+
+        // five
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom)
+            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '5';
+        }
+
+        // six
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom)
+            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '6';
+        }
+
+        // seven
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == SegmentPositions.Right
+            && segmentPosition2 == SegmentPositions.Right)
+        {
+            return '7';
+        }
+
+        // eight
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
+            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '8';
+        }
+
+        // nine
+        if (segmentPosition0 == SegmentPositions.Bottom
+            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
+            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
+        {
+            return '9';
+        }
+
+        // unknown / invalid character
+        return '?';
+
+        // leaving this old code here as it might help with the guessing requirement later
+        /*var pipeCount = GetPipeCount(ocrDigit);
         var underscoreCount = GetUnderscoreCount(ocrDigit);
 
         // there are four pipes - must be either 0 or 8
@@ -47,16 +137,16 @@ public class OcrService
             return (byte)(pipeCount == 2 ? 1 : 4);
         }
 
-        // for the remaining digits we have to check the segments, counting pipes / underscores isn't 
+        // for the remaining digits we have to check the segments, counting pipes / underscores isn't
         // enough to establish which digit we might have
 
-        var segments = ocrDigit.Split("\n");
+
         var row2SegmentPositions = GetSegmentPositions(segments[1]);
         var row3SegmentPositions = GetSegmentPositions(segments[2]);
         if (pipeCount == 2 && underscoreCount == 3)
         {
             // must be 2, 3 or 5
-            if (row2SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right) 
+            if (row2SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right)
                 && row3SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right))
             {
                 // must be three
@@ -69,7 +159,7 @@ public class OcrService
 
         // only 6 and 9 left
         // if the bottom segment has all three positions it must be 6
-        return row3SegmentPositions == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right) ? (byte)6 : (byte)9;
+        return row3SegmentPositions == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right) ? (byte)6 : (byte)9;*/
     }
 
     /// <summary>
@@ -81,10 +171,10 @@ public class OcrService
     /// </remarks>
     /// <param name="orcRow"></param>
     /// <returns></returns>
-    public string ConvertOcrNumberToAccountNumber(string orcRow)
+    public AccountNumber ConvertOcrNumberToAccountNumber(string orcRow)
     {
         var rowSegments = orcRow.Split("\n");
-        var result = new StringBuilder();
+        var accountNumber = new StringBuilder();
         var digitOcr = new StringBuilder();
         for (var digitIndex = 0; digitIndex < 9; digitIndex++)
         {
@@ -93,11 +183,13 @@ public class OcrService
             {
                 digitOcr.Append($"{rowSegments[lineIndex].Substring(digitIndex * 3, 3)}\n");
             }
-            result.Append(ConvertOcrDigitToNumber(digitOcr.ToString()));
+            accountNumber.Append(ConvertOcrDigitToNumber(digitOcr.ToString()));
             digitOcr.Clear();
         }
 
-        return result.ToString();
+        var result = new AccountNumber { Number = accountNumber.ToString() };
+        result.Status = result.Number.Contains('?') ? "ILL" : null;
+        return result;
     }
 
     /// <summary>0
@@ -108,10 +200,10 @@ public class OcrService
     /// </remarks>
     /// <param name="ocrFileContents"></param>
     /// <returns></returns>
-    public List<string> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
+    public List<AccountNumber> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
     {
         var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
-        var result = new List<string>();
+        var result = new List<AccountNumber>();
         for (var ocrRowIndex = 0; ocrRowIndex < numberOfRows; ocrRowIndex++)
         {
             var ocrRow = ocrFileContents.Substring(ocrRowIndex * CharactersPerOcrRow, CharactersPerOcrRow);
@@ -137,7 +229,8 @@ public class OcrService
            "|_ " => SegmentPositions.Left | SegmentPositions.Bottom,
            "|_|" => SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right,
            " _|" => SegmentPositions.Bottom | SegmentPositions.Right,
-           _ => throw new ArgumentException("Invalid segment")
+           "| |" => SegmentPositions.Left | SegmentPositions.Right,
+           _ => SegmentPositions.None
        };
     }
 
