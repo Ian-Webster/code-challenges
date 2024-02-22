@@ -1,30 +1,41 @@
-﻿namespace BankOcr.Business.Tests.AccountNumber;
+﻿using System;
+
+namespace BankOcr.Business.Tests.AccountNumber;
 
 [TestFixture]
 public class AccountNumberIsValid: AccountNumberServiceBase
 {
     [TestCase(true)]
     [TestCase(false)]
-    public void Should_ThrowException_WhenAccountNumberIsNullOrEmpty(bool isNull)
+    public void Should_ReturnFalse_WhenAccountNumberIsNullOrEmpty(bool isNull)
     {
-        // Act / Assert
-        Assert.Throws<ArgumentNullException>(() => GetService().AccountNumberIsValid(isNull? null : string.Empty));
+        // Act
+        var result = GetService().AccountNumberIsValid(isNull ? null : string.Empty);
+
+        // Assert
+        Assert.That(result, Is.False);
     }
 
     [TestCase("123")]
     [TestCase("1234567890")]
-    public void Should_ThrowException_WhenAccountNumberIsWrongLength(string accountNumber)
+    public void Should_ReturnFalse_WhenAccountNumberIsWrongLength(string accountNumber)
     {
-        // Act / Assert
-        Assert.Throws<Exception>(() => GetService().AccountNumberIsValid(accountNumber));
+        // Act
+        var result = GetService().AccountNumberIsValid(accountNumber);
+
+        // Assert
+        Assert.That(result, Is.False); ;
     }
 
     [TestCase("abcdefghi")]
     [TestCase("_=+()!£$%")]
-    public void Should_ThrowException_WhenAccountNumberIsWNumeric(string accountNumber)
+    public void Should_ReturnFalse_WhenAccountNumberIsWNumeric(string accountNumber)
     {
-        // Act / Assert
-        Assert.Throws<Exception>(() => GetService().AccountNumberIsValid(accountNumber));
+        // Act
+        var result = GetService().AccountNumberIsValid(accountNumber);
+
+        // Assert
+        Assert.That(result, Is.False);
     }
 
     [TestCase("711111111")]

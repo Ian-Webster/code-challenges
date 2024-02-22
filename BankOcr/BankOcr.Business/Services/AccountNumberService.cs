@@ -4,11 +4,11 @@ public class AccountNumberService
 {
     public bool AccountNumberIsValid(string accountNumber)
     {
-        if (string.IsNullOrWhiteSpace(accountNumber)) throw new ArgumentNullException(nameof(accountNumber));
-        
-        if (accountNumber.Length != 9) throw new Exception("Account number must be 9 digits");
+        if (string.IsNullOrWhiteSpace(accountNumber)) return false;
 
-        if (!accountNumber.All(char.IsDigit)) throw new Exception("Account number must be numeric");
+        if (accountNumber.Length != 9) return false;
+
+        if (!accountNumber.All(char.IsDigit)) return false;
 
         // reverse the account number and convert to byte array
         var accountNumberDigits = accountNumber
