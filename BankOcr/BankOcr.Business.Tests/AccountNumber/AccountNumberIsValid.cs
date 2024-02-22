@@ -53,7 +53,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
     [TestCase("888888888")]
     [TestCase("490067715")]
     [TestCase("012345678")]
-    public void Should_ReturnFalse_WhenAccountNumberIsinValid(string accountNumber)
+    public void Should_ReturnFalse_WhenAccountNumberIsInValid(string accountNumber)
     {
         // Act
         var result = GetService().AccountNumberIsValid(accountNumber);

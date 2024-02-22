@@ -9,7 +9,13 @@ namespace BankOcr.Business.Services;
 /// </summary>
 public class OcrService
 {
+    private readonly IAccountNumberService _accountNumberService;
     public const byte CharactersPerOcrRow = 85;
+
+    public OcrService(IAccountNumberService accountNumberService)
+    {
+        _accountNumberService = accountNumberService;
+    }
 
     /// <summary>
     /// Converts a single OCR "digit" to a number
@@ -188,7 +194,15 @@ public class OcrService
         }
 
         var result = new AccountNumber { Number = accountNumber.ToString() };
-        result.Status = result.Number.Contains('?') ? "ILL" : null;
+        if (result.Number.Contains('?'))
+        {
+            result.Status = "ILL";
+            return result;
+        }
+
+        if (_accountNumberService.AccountNumberIsValid(result.Number)) return result;
+
+        result.Status = "ERR";
         return result;
     }
 

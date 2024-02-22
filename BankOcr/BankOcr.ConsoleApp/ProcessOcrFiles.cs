@@ -11,7 +11,7 @@ public class ProcessOcrFiles
 
     public ProcessOcrFiles()
     {
-        _orcService = new OcrService();
+        _orcService = new OcrService(new AccountNumberService());
     }
 
     public void MainMenu()

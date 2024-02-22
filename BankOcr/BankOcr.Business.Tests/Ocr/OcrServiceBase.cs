@@ -1,13 +1,28 @@
 ﻿using System.Collections;
+using System.Text;
 using BankOcr.Business.Services;
+using NSubstitute;
 
 namespace BankOcr.Business.Tests.Ocr;
 
 public class OcrServiceBase
 {
+    protected IAccountNumberService MockAccountNumberService;
+
+    [SetUp]
+    protected void Setup()
+    {
+        MockAccountNumberService = Substitute.For<IAccountNumberService>();
+    }
+
     protected OcrService GetService()
     {
-        return new OcrService();
+        return new OcrService(MockAccountNumberService);
+    }
+
+    protected void SetAccountNumberServiceValidation(bool isValid)
+    {
+        MockAccountNumberService.AccountNumberIsValid(Arg.Any<string>()).Returns(isValid);
     }
 
     public static IEnumerable GetOcrDigitTestCaseData()
@@ -239,7 +254,7 @@ public class OcrServiceBase
             "|_||_||_||_||_||_||_| _|  |\n" +
             "\n",
             "000000051",
-            true
+            "ERR"
         ).SetName("Valid");
 
         yield return new TestCaseData(
@@ -248,7 +263,7 @@ public class OcrServiceBase
             "  | _||_||_||_|  |  |  | _|\n" +
             "\n",
             "49006771?",
-            false
+            "ILL"
         ).SetName("Last character invalid");
 
         yield return new TestCaseData(
@@ -257,7 +272,69 @@ public class OcrServiceBase
             "  ||_  _|  | _||_|  ||_| _ \n" +
             "\n",
             "1234?678?",
-            false
+            "ILL"
         ).SetName("Multiple invalid characters");
     }
+
+    public static IEnumerable GetAccountValidationTestCaseData()
+    {
+        // valid
+        // 711111111
+        yield return new TestCaseData(
+            " _                         \n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n",
+            "711111111", 
+            true
+        ).SetName("Valid 711111111");
+        // 123456789
+        yield return new TestCaseData(
+            "    _  _     _  _  _  _  _ \n" +
+            "  | _| _||_||_ |_   ||_||_|\n" +
+            "  ||_  _|  | _||_|  ||_| _|\n" +
+            "\n",
+            "123456789", 
+            true
+        ).SetName("Valid 123456789");
+        // 490867715
+        yield return new TestCaseData(
+            "    _  _  _  _  _  _     _ \n" +
+            "|_||_|| ||_||_   |  |  ||_ \n" +
+            "  | _||_||_||_|  |  |  | _|\n" +
+            "\n",
+            "490867715", 
+            true
+        ).SetName("Valid 490867715");
+
+        // invalid
+        // 888888888
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n",
+            "888888888", 
+            false
+        ).SetName("Invalid 888888888");
+        // 490067715
+        yield return new TestCaseData(
+            "    _  _  _  _  _  _     _ \n" +
+            "|_||_|| || ||_   |  |  ||_ \n" +
+            "  | _||_||_||_|  |  |  | _|\n" +
+            "\n",
+            "490067715", 
+            false
+        ).SetName("Invalid 490067715");
+        // 012345678
+        yield return new TestCaseData(
+            " _     _  _     _  _  _  _ \n" +
+            "| |  | _| _||_||_ |_   ||_|\n" +
+            "|_|  ||_  _|  | _||_|  ||_|\n" +
+            "\n",
+            "012345678", 
+            false
+        ).SetName("Invalid 012345678");
+    }
+
 }

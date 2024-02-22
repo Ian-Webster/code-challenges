@@ -1,6 +1,6 @@
 ﻿namespace BankOcr.Business.Services;
 
-public class AccountNumberService
+public class AccountNumberService : IAccountNumberService
 {
     public bool AccountNumberIsValid(string accountNumber)
     {
