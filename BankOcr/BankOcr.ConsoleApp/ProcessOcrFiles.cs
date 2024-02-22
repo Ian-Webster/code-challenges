@@ -1,6 +1,5 @@
 ﻿using Spectre.Console;
 using System.Reflection;
-using System.Text;
 using BankOcr.Business.Services;
 
 namespace BankOcr.ConsoleApp;
@@ -67,9 +66,14 @@ public class ProcessOcrFiles
             // Add some columns
             table.AddColumn("Account number");
             table.AddColumn("Status");
+            table.AddColumn("Possible numbers");
 
             // Add some rows
-            accountNumbers.ForEach(accountNumber => table.AddRow(accountNumber.Data.Number, accountNumber.Data.Status ?? string.Empty));
+            accountNumbers.ForEach(accountNumber => table.AddRow(
+                accountNumber.Data.Number, 
+                accountNumber.Data.Status != null ? accountNumber.Data.Status != "Ok"? accountNumber.Data.Status : string.Empty : string.Empty,
+                accountNumber.PossibleMatches != null ? string.Join(", ", accountNumber.PossibleMatches) : string.Empty)
+            );
 
             // Render the table to the console
             AnsiConsole.Write(table);
