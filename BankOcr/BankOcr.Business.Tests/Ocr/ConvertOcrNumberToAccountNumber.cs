@@ -19,6 +19,9 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
     [TestCaseSource(nameof(GetInvalidNumberTestCaseData))]
     public void Should_Return_InvalidAccountNumberStatus_When_OcrRowIsInValid(string orcRow, string expectedOutPut, string expectedStatus)
     {
+        // Arrange
+        SetAccountNumberServiceValidation(false);
+
         // Act
         var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
 
@@ -31,6 +34,9 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
     [TestCaseSource(nameof(GetAccountValidationTestCaseData))]
     public void Should_Return_ExpectedAccountNumberStatus(string orcRow, string expectedOutPut, bool isValid)
     {
+        // Arrange
+        SetAccountNumberServiceValidation(isValid);
+
         // Act
         var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
 

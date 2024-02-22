@@ -37,135 +37,54 @@ public class OcrService
     public char ConvertOcrDigitToNumber(string ocrDigit)
     {
         var segments = ocrDigit.Split("\n");
-        var segmentPosition0 = GetSegmentPositions(segments[0]);
-        var segmentPosition1 = GetSegmentPositions(segments[1]);
-        var segmentPosition2 = GetSegmentPositions(segments[2]);
-
-        // zero
-        if (segmentPosition0 == SegmentPositions.Bottom 
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Right)
-            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
+        var digit = new OcrDigit
         {
-            return '0';
-        }
+            Top = segments[0].Contains('_'),
+            Middle = new HashSet<Positions>(GetSegmentPositions(segments[1])),
+            Bottom = new HashSet<Positions>(GetSegmentPositions(segments[2]))
+        };
 
-        // one
-        if (segmentPosition0 == SegmentPositions.None
-            && segmentPosition1 == SegmentPositions.Right
-            && segmentPosition2 == SegmentPositions.Right)
+        var result = ParseOcrDigitSegments(digit);
+
+        return result ?? '?';
+    }
+
+    /// <summary>
+    /// This method is used when ConvertOcrDigitToNumber can't determine the digit
+    /// </summary>
+    /// <remarks>
+    /// The method will try taking and adding a single pipe or underscore to the OCR digit in an attempt to
+    /// make it a valid digit.
+    /// Will return all possible valid digits
+    /// </remarks>
+    /// <param name="ocrDigit"></param>
+    /// <returns></returns>
+    public List<char> GuessOcrDigit(string ocrDigit)
+    {
+        // get the segments as they are currently
+        var segments = ocrDigit.Split("\n");
+        var currentDigit = new OcrDigit
         {
-            return '1';
-        }
+            Top = segments[0].Contains('_'),
+            Middle = new HashSet<Positions>(GetSegmentPositions(segments[1])),
+            Bottom = new HashSet<Positions>(GetSegmentPositions(segments[2]))
+        };
 
-        // two
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Bottom | SegmentPositions.Right)
-            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom))
+        // generate all possible variations of the current digit - making single changes at a time
+        var possibleVariations = GenerateVariations(currentDigit);
+
+        // test each variation to see if it's a valid digit
+        var possibleDigits = new List<char>();
+        foreach (var variation in possibleVariations)
         {
-            return '2';
-        }
-
-        // three
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Bottom | SegmentPositions.Right)
-            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
-        {
-            return '3';
-        }
-
-        // four
-        if (segmentPosition0 == SegmentPositions.None
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
-            && segmentPosition2 == SegmentPositions.Right)
-        {
-            return '4';
-        }
-
-        // five
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom)
-            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
-        {
-            return '5';
-        }
-
-        // six
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom)
-            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
-        {
-            return '6';
-        }
-
-        // seven
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == SegmentPositions.Right
-            && segmentPosition2 == SegmentPositions.Right)
-        {
-            return '7';
-        }
-
-        // eight
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
-            && segmentPosition2 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right))
-        {
-            return '8';
-        }
-
-        // nine
-        if (segmentPosition0 == SegmentPositions.Bottom
-            && segmentPosition1 == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right)
-            && segmentPosition2 == (SegmentPositions.Bottom | SegmentPositions.Right))
-        {
-            return '9';
-        }
-
-        // unknown / invalid character
-        return '?';
-
-        // leaving this old code here as it might help with the guessing requirement later
-        /*var pipeCount = GetPipeCount(ocrDigit);
-        var underscoreCount = GetUnderscoreCount(ocrDigit);
-
-        // there are four pipes - must be either 0 or 8
-        if (pipeCount == 4)
-        {
-            return (byte) (underscoreCount == 3 ? 8 : 0);
-        }
-
-        // two pipes and a single underscore must be 7
-        if (pipeCount == 2 && underscoreCount == 1) return 7;
-
-        // if the second character isn't a pipe must be  1 or 4
-        if (ocrDigit[1] != '_')
-        {
-            return (byte)(pipeCount == 2 ? 1 : 4);
-        }
-
-        // for the remaining digits we have to check the segments, counting pipes / underscores isn't
-        // enough to establish which digit we might have
-
-
-        var row2SegmentPositions = GetSegmentPositions(segments[1]);
-        var row3SegmentPositions = GetSegmentPositions(segments[2]);
-        if (pipeCount == 2 && underscoreCount == 3)
-        {
-            // must be 2, 3 or 5
-            if (row2SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right)
-                && row3SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right))
+            var result = ParseOcrDigitSegments(variation);
+            if (result != null)
             {
-                // must be three
-                return 3;
+                possibleDigits.Add(result.Value);
             }
-
-            // must be 2 or 5
-            return row2SegmentPositions == (SegmentPositions.Bottom | SegmentPositions.Right) ? (byte)2 : (byte)5;
         }
 
-        // only 6 and 9 left
-        // if the bottom segment has all three positions it must be 6
-        return row3SegmentPositions == (SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right) ? (byte)6 : (byte)9;*/
+        return possibleDigits;
     }
 
     /// <summary>
@@ -233,19 +152,152 @@ public class OcrService
     /// <param name="segment">segment to check</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    private SegmentPositions GetSegmentPositions(string segment)
+    private List<Positions> GetSegmentPositions(string segment)
     {
        return segment switch
        {
-           "|  " => SegmentPositions.Left,
-           " _ " => SegmentPositions.Bottom,
-           "  |" => SegmentPositions.Right,
-           "|_ " => SegmentPositions.Left | SegmentPositions.Bottom,
-           "|_|" => SegmentPositions.Left | SegmentPositions.Bottom | SegmentPositions.Right,
-           " _|" => SegmentPositions.Bottom | SegmentPositions.Right,
-           "| |" => SegmentPositions.Left | SegmentPositions.Right,
-           _ => SegmentPositions.None
+           "|  " => new List<Positions> { Positions.Left },
+           " _ " => new List<Positions> { Positions.Bottom },
+           "  |" => new List<Positions> { Positions.Right },
+           "|_ " => new List<Positions> { Positions.Left, Positions.Bottom },
+           "|_|" => new List<Positions> { Positions.Left, Positions.Bottom, Positions.Right },
+           " _|" => new List<Positions> { Positions.Bottom, Positions.Right },
+           "| |" => new List<Positions> { Positions.Left, Positions.Right },
+           _ => new List<Positions> { Positions.None }
        };
+    }
+
+    private char? ParseOcrDigitSegments(OcrDigit digit)
+    {
+        // zero
+        if (digit.Top
+            && digit.MiddleContains(Positions.Left, Positions.Right)
+            && digit.BottomContains(Positions.Left, Positions.Bottom, Positions.Right))
+        {
+            return '0';
+        }
+
+        // one
+        if (digit.Top == false
+            && digit.MiddleContains(Positions.Right)
+            && digit.BottomContains(Positions.Right))
+        {
+            return '1';
+        }
+
+        // two
+        if (digit.Top
+            && digit.MiddleContains(Positions.Bottom, Positions.Right)
+            && digit.BottomContains(Positions.Left, Positions.Bottom))
+        {
+            return '2';
+        }
+
+        // three
+        if (digit.Top
+            && digit.MiddleContains(Positions.Bottom, Positions.Right)
+            && digit.BottomContains(Positions.Bottom, Positions.Right))
+        {
+            return '3';
+        }
+
+        // four
+        if (digit.Top == false
+            && digit.MiddleContains(Positions.Left, Positions.Bottom, Positions.Right)
+            && digit.BottomContains(Positions.Right))
+        {
+            return '4';
+        }
+
+        // five
+        if (digit.Top
+            && digit.MiddleContains(Positions.Left, Positions.Bottom)
+            && digit.BottomContains(Positions.Bottom, Positions.Right))
+        {
+            return '5';
+        }
+
+        // six
+        if (digit.Top
+            && digit.MiddleContains(Positions.Left, Positions.Bottom)
+            && digit.BottomContains(Positions.Left, Positions.Bottom, Positions.Right))
+        {
+            return '6';
+        }
+
+        // seven
+        if (digit.Top
+            && digit.MiddleContains(Positions.Right)
+            && digit.BottomContains(Positions.Right))
+        {
+            return '7';
+        }
+
+        // eight
+        if (digit.Top
+            && digit.MiddleContains(Positions.Left, Positions.Bottom, Positions.Right)
+            && digit.BottomContains(Positions.Left, Positions.Bottom, Positions.Right))
+        {
+            return '8';
+        }
+
+        // nine
+        if (digit.Top
+            && digit.MiddleContains(Positions.Left, Positions.Bottom, Positions.Right)
+            && digit.BottomContains(Positions.Bottom, Positions.Right))
+        {
+            return '9';
+        }
+
+        // invalid digit
+        return null;
+    }
+
+    public List<OcrDigit> GenerateVariations(OcrDigit original)
+    {
+        var variations = new List<OcrDigit>
+        {
+            // Generate variations for the top segment
+            new OcrDigit { Top = !original.Top, Middle = original.Middle, Bottom = original.Bottom }
+        };
+
+        // Generate variations for the middle segment
+        foreach (Positions position in Enum.GetValues(typeof(Positions)))
+        {
+            if (position == Positions.None) continue;
+
+            var newMiddle = new HashSet<Positions>(original.Middle);
+            if (newMiddle.Contains(position))
+            {
+                newMiddle.Remove(position);
+            }
+            else
+            {
+                newMiddle.Add(position);
+            }
+
+            variations.Add(new OcrDigit { Top = original.Top, Middle = newMiddle, Bottom = original.Bottom });
+        }
+
+        // Generate variations for the bottom segment
+        foreach (Positions position in Enum.GetValues(typeof(Positions)))
+        {
+            if (position == Positions.None) continue;
+
+            var newBottom = new HashSet<Positions>(original.Bottom);
+            if (newBottom.Contains(position))
+            {
+                newBottom.Remove(position);
+            }
+            else
+            {
+                newBottom.Add(position);
+            }
+
+            variations.Add(new OcrDigit { Top = original.Top, Middle = original.Middle, Bottom = newBottom });
+        }
+
+        return variations;
     }
 
     /// <summary>
