@@ -1,4 +1,6 @@
-﻿using NSubstitute;
+﻿using BankOcr.Business.Models;
+using Newtonsoft.Json;
+using NSubstitute;
 
 namespace BankOcr.Business.Tests.Ocr;
 
@@ -16,41 +18,17 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
         MockAccountNumberService.Received(1).AccountNumberIsValid(accountNumber);
     }
 
-    [TestCaseSource(nameof(GetInvalidNumberTestCaseData))]
-    public void Should_Return_InvalidAccountNumberStatus_When_OcrRowIsInValid(string orcRow, string expectedOutPut, string expectedStatus)
-    {
-        // Act
-        var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedOutPut, result.Number);
-        Assert.AreEqual(expectedStatus, result.Status);
-    }
-
-    [TestCaseSource(nameof(GetAccountValidationTestCaseData))]
-    public void Should_Return_ExpectedAccountNumberStatus(string orcRow, string expectedOutPut, bool isValid)
-    {
-        // Act
-        var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
-
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Number, Is.EqualTo(expectedOutPut));
-        if (!isValid)
-        {
-            Assert.That(result.Status, Is.EqualTo("ERR"));
-        }
-    }
-
     [TestCaseSource(nameof(GetOcrNumberTestCaseData))]
-    public void Should_Return_ExpectedAccountNumber_When_OrcRowIsValid(string orcRow, string expectedAccountNumber)
+    public void Should_Return_ExpectedAccountNumberRow(string orcRow, AccountNumberRow expectedOutPut, List<string> validNumbers)
     {
+        // Arrange
+        SetAccountNumberServiceGetValidAccountNumbers(validNumbers);
+
         // Act
         var result = GetService().ConvertOcrNumberToAccountNumber(orcRow);
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.AreEqual(expectedAccountNumber, result.Number);
+        StringAssert.AreEqualIgnoringCase(JsonConvert.SerializeObject(expectedOutPut), JsonConvert.SerializeObject(result));
     }
 }

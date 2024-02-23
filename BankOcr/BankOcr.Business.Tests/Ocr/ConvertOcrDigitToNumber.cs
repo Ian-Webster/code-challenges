@@ -12,4 +12,14 @@ public class ConvertOcrDigitToNumber: OcrServiceBase
         // Assert
         Assert.That(result, Is.EqualTo(expectedDigit));
     }
+
+    [TestCaseSource(nameof(GetIllegibleOcrDigitTestCaseData))]
+    public void Should_Return_IllegibleChar_WhenDigitIsIllegible(string ocrString)
+    {
+        // Act
+        var result = GetService().ConvertOcrDigitToNumber(ocrString);
+
+        // Assert
+        Assert.That(result, Is.EqualTo('?'));
+    }
 }

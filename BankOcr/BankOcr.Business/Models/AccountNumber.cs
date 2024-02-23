@@ -1,4 +1,6 @@
-﻿namespace BankOcr.Business.Models;
+﻿using BankOcr.Business.Enums;
+
+namespace BankOcr.Business.Models;
 
 /// <summary>
 /// Holds data about an individual account number
@@ -13,8 +15,13 @@ public class AccountNumber
     /// <summary>
     /// The status for this account number
     /// </summary>
-    /// <remarks>
-    /// Used to indicate if the account number is valid or not
-    /// </remarks>
-    public string? Status { get; set; }
+    public AccountNumberStatus Status { get; set; }
+
+    public string StatusFriendlyMessage => Status switch
+    {
+        AccountNumberStatus.Error => "ERR",
+        AccountNumberStatus.Illegible => "ILL",
+        AccountNumberStatus.Ambiguous => "AMB",
+        _ => string.Empty
+    };
 }
