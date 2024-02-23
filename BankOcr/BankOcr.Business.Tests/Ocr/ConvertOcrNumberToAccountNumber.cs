@@ -19,7 +19,7 @@ public class ConvertOcrNumberToAccountNumber: OcrServiceBase
     }
 
     [TestCaseSource(nameof(GetOcrNumberTestCaseData))]
-    public void Should_Return_ExpectedAccountNumberStatus(string orcRow, AccountNumberRow expectedOutPut, List<string> validNumbers)
+    public void Should_Return_ExpectedAccountNumberRow(string orcRow, AccountNumberRow expectedOutPut, List<string> validNumbers)
     {
         // Arrange
         SetAccountNumberServiceGetValidAccountNumbers(validNumbers);

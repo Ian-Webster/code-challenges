@@ -78,7 +78,7 @@ public class ProcessOcrFiles
             // Render the table to the console
             AnsiConsole.Write(table);
 
-            AnsiConsole.Markup("If you wish to load another file please press [green]space[/] otherwise press any other key to exist");
+            AnsiConsole.Markup("If you wish to load another file please press [green]space[/] otherwise press any other key to exit");
 
             var key = Console.ReadKey();
             if (key.Key == ConsoleKey.Spacebar)

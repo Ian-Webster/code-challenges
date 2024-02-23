@@ -21,11 +21,6 @@ public class OcrServiceBase
         return new OcrService(MockAccountNumberService);
     }
 
-    protected void SetAccountNumberServiceValidation(bool isValid)
-    {
-        MockAccountNumberService.AccountNumberIsValid(Arg.Any<string>()).Returns(isValid);
-    }
-
     protected void SetAccountNumberServiceGetValidAccountNumbers(List<string> accountNumbers)
     {
         MockAccountNumberService.GetValidAccountNumbers(Arg.Any<List<string>>()).Returns(accountNumbers);
@@ -113,6 +108,65 @@ public class OcrServiceBase
             "",
             '9'
         ).SetName("9");
+    }
+
+    public static IEnumerable GetIllegibleOcrDigitTestCaseData()
+    {
+        yield return new TestCaseData
+        (
+            "   \n" +
+            "| |\n" +
+            "| |\n" +
+            ""
+        ).SetName("Test case 1");
+
+        yield return new TestCaseData
+        (
+            "   \n" +
+            "  |\n" +
+            "   \n" +
+            ""
+        ).SetName("Test case 2");
+
+        yield return new TestCaseData
+        (
+            " _ \n" +
+            " _ \n" +
+            " _ \n" +
+            ""
+        ).SetName("Test case 3");
+
+        yield return new TestCaseData
+        (
+            "   \n" +
+            " _ \n" +
+            " _|\n" +
+            ""
+        ).SetName("Test case 4");
+
+        yield return new TestCaseData
+        (
+            "   \n" +
+            " _ \n" +
+            "   \n" +
+            ""
+        ).SetName("Test case 5");
+
+        yield return new TestCaseData
+        (
+            "   \n" +
+            "   \n" +
+            "   \n" +
+            ""
+        ).SetName("Test case 6");
+
+        yield return new TestCaseData
+        (
+            "   \n" +
+            "|  \n" +
+            "| \n" +
+            ""
+        ).SetName("Test case 7");
     }
 
     public static IEnumerable GetOcrFileContentsTestCaseData()
@@ -333,7 +387,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "711111111" }
-        ).SetName("711111111");
+        ).SetName("OK - 711111111");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -349,7 +403,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "777777177" }
-        ).SetName("777777177");
+        ).SetName("OK - 777777177");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -365,7 +419,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "200800000" }
-        ).SetName("200800000");
+        ).SetName("OK - 200800000");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -381,7 +435,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "333393333" }
-        ).SetName("333393333");
+        ).SetName("OK - 333393333");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -398,7 +452,7 @@ public class OcrServiceBase
                 PossibleMatches = new List<string> { "888886888", "888888880", "888888988" }
             },
             new List<string> { "888886888", "888888880", "888888988" }
-        ).SetName("888888888");
+        ).SetName("AMB - 888888888");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -415,7 +469,7 @@ public class OcrServiceBase
                 PossibleMatches = new List<string> { "555655555", "559555555" }
             },
             new List<string> { "555655555", "559555555" }
-        ).SetName("555555555");
+        ).SetName("AMB - 555555555");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -432,7 +486,7 @@ public class OcrServiceBase
                 PossibleMatches = new List<string> { "666566666", "686666666" }
             },
             new List<string> { "666566666", "686666666" }
-        ).SetName("666666666");
+        ).SetName("AMB - 666666666");
 
         yield return new TestCaseData(
             " _  _  _  _  _  _  _  _  _ \n" +
@@ -449,7 +503,7 @@ public class OcrServiceBase
                 PossibleMatches = new List<string> { "899999999", "993999999", "999959999" }
             },
             new List<string> { "899999999", "993999999", "999959999" }
-        ).SetName("999999999");
+        ).SetName("AMB - 999999999");
 
         yield return new TestCaseData(
             "    _  _  _  _  _  _     _ \n" +
@@ -466,7 +520,7 @@ public class OcrServiceBase
                 PossibleMatches = new List<string> { "490067115", "490067719", "490867715" }
             },
             new List<string> { "490067115", "490067719", "490867715" }
-        ).SetName("490067715");
+        ).SetName("AMB - 490067715");
 
         yield return new TestCaseData(
             "    _  _     _  _  _  _  _ \n" +
@@ -482,7 +536,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "123456789" }
-        ).SetName("123456789");
+        ).SetName("OK - 123456789");
 
         yield return new TestCaseData(
             " _     _  _  _  _  _  _    \n" +
@@ -498,7 +552,7 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "000000051" }
-        ).SetName("000000051");
+        ).SetName("OK - 000000051");
 
         yield return new TestCaseData(
             "    _  _  _  _  _  _     _ \n" +
@@ -514,6 +568,103 @@ public class OcrServiceBase
                 }
             },
             new List<string> { "490867715" }
-        ).SetName("490867715");
+        ).SetName("OK - 490867715");
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _    \n" +
+            "| || || || || || || | _|  |\n" +
+            "|_||_||_||_||_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "000000031",
+                    Status = AccountNumberStatus.Error
+                }
+            },
+            null
+        ).SetName("ERR - 000000031");
+
+        yield return new TestCaseData(
+            " _     _  _  _  _  _  _    \n" +
+            "|_|  || || || || || | _|  |\n" +
+            "|_|  ||_||_||_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "810000031",
+                    Status = AccountNumberStatus.Error
+                }
+            },
+            null
+        ).SetName("ERR - 810000031");
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _    \n" +
+            "|_|  || || || || || ||_   |\n" +
+            " _|  ||_||_||_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "970000051",
+                    Status = AccountNumberStatus.Error
+                }
+            },
+            null
+        ).SetName("ERR - 970000051");
+
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _       \n" +
+            "| || || || || || || | _   |\n" +
+            "|_||_||_||_||_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "0000000?1",
+                    Status = AccountNumberStatus.Illegible
+                }
+            },
+            null
+        ).SetName("ILL - 0000000?1");
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _       \n" +
+            "|  | || || || || || | _   |\n" +
+            "| ||_||_||_||_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "?000000?1",
+                    Status = AccountNumberStatus.Illegible
+                }
+            },
+            null
+        ).SetName("ILL - ?000000?1");
+
+        yield return new TestCaseData(
+            " _  _  _     _  _  _       \n" +
+            "|  | || |  || || || | _   |\n" +
+            "| ||_||_||_ |_||_||_| _|  |\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "?00?000?1",
+                    Status = AccountNumberStatus.Illegible
+                }
+            },
+            null
+        ).SetName("ILL - ?00?000?1");
     }
 }

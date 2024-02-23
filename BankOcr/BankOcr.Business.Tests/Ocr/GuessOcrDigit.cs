@@ -13,4 +13,14 @@ public class GuessOcrDigit: OcrServiceBase
         Assert.That(result, Is.Not.Null);
         CollectionAssert.AreEquivalent(expectedGuesses, result);
     }
+
+    [TestCaseSource(nameof(GetIllegibleOcrDigitTestCaseData))]
+    public void Should_Return_Null_WhenCharacterIsIllegible(string ocrDigit)
+    {
+        // Act
+        var result = GetService().GuessOcrDigit(ocrDigit);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
 }

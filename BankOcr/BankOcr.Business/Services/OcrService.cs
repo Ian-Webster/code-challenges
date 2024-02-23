@@ -59,7 +59,7 @@ public class OcrService
     /// </remarks>
     /// <param name="ocrDigit"></param>
     /// <returns></returns>
-    public List<char> GuessOcrDigit(string ocrDigit)
+    public List<char>? GuessOcrDigit(string ocrDigit)
     {
         // get the segments as they are currently
         var segments = ocrDigit.Split("\n");
@@ -84,7 +84,7 @@ public class OcrService
             }
         }
 
-        return possibleDigits;
+        return possibleDigits.Any()? possibleDigits : null;
     }
 
     /// <summary>
@@ -116,7 +116,14 @@ public class OcrService
             digitOcr.Clear();
         }
 
-        var result = new AccountNumberRow { Data = new AccountNumber { Number = accountNumber.ToString() } };
+        var result = new AccountNumberRow
+        {
+            Data = new AccountNumber
+            {
+                Number = accountNumber.ToString(), 
+                Status = AccountNumberStatus.Error // assume error as the default status
+            }
+        };
 
         List<string>? guessedNumbers;
 
@@ -137,20 +144,6 @@ public class OcrService
 
                 // we found multiple matches
                 if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
-
-                /*// check if any of them are a valid account number
-                var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
-                if (validAccounts != null && validAccounts.Any())
-                {
-                    // we got a valid match - replace the number with the valid match and return the data
-                    result.Data.Number = validAccounts.First();
-                    return result;
-                }
-
-                // none of the matches were valid, return with the possible matches and a state of ambiguous
-                result.PossibleMatches = guessedNumbers;
-                result.Data.Status = "AMB";
-                return result;*/
             }
         }
 
@@ -182,8 +175,7 @@ public class OcrService
             if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
         }
 
-        // failed to guess any valid alternatives
-        result.Data.Status = AccountNumberStatus.Error;
+        // failed to guess any valid alternatives, return what we have
         return result;
     }
 
@@ -403,6 +395,9 @@ public class OcrService
         {
             // iterate each digit and generate possible valid digits
             var possibleDigits = GuessOcrDigit(digit.Value);
+
+            if (possibleDigits == null) continue; // didn't find any valid guesses
+
             foreach (var possibleDigit in possibleDigits)
             {
                 // replace the bad digit with the possible valid digit
