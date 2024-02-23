@@ -51,12 +51,6 @@ jobs:
     - name: Publish BankOcr
       run: dotnet publish --configuration Release --no-build --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
 
-    - name: Create build artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: BankOcrApp_${{ env.NOW }}
-        path: ./BankOcrApp
-
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -75,6 +69,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./BankOcrApp_${{ env.NOW }}.zip
+        asset_path: ./BankOcrApp.zip
         asset_name: BankOcrApp_${{ env.NOW }}.zip
         asset_content_type: application/zip          
