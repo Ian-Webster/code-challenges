@@ -1,0 +1,45 @@
+name: BankOCR - branch actions
+
+on:
+    push:
+      branches:
+        - '*'
+        - '!main'
+
+jobs:
+  build_BankOCR:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x        
+
+    - uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          src:
+            - 'BankOcr/**'
+
+    # Resource NuGet dependencies
+    - name: Restore dependencies
+      if: steps.changes.outputs.src == 'true'
+      run: dotnet restore 'BankOcr/BankOcr.ConsoleApp'        
+
+    # Build project
+    - name: Build
+      if: steps.changes.outputs.src == 'true'    
+      run: dotnet build --configuration Release 'BankOcr/BankOcr.ConsoleApp' 
+
+    # Execute all unit tests in the solution
+    - name: Execute unit tests
+      if: steps.changes.outputs.src == 'true'
+      run: dotnet test 'BankOcr/BankOcr.Business.Tests' 
