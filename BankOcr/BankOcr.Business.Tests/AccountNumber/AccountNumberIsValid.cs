@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BankOcr.Business.Tests.AccountNumber;
+﻿namespace BankOcr.Business.Tests.AccountNumber;
 
 [TestFixture]
 public class AccountNumberIsValid: AccountNumberServiceBase
