@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System.Reflection;
+using BankOcr.Business.Models;
 using BankOcr.Business.Services;
 
 namespace BankOcr.ConsoleApp;
@@ -58,6 +59,15 @@ public class ProcessOcrFiles
         if (File.Exists(filePath))
         {
             var fileContents = File.ReadAllText(filePath).Replace("\r\n", "\n");
+
+            var validationResult = _orcService.ValidateOcrFile(fileContents);
+
+            if (!validationResult.IsValid)
+            {
+                DisplayValidationErrors(validationResult);
+                return;
+            }
+
             var accountNumbers = _orcService.GetAccountNumbersFromOcrFileContents(fileContents);
 
             // Create a table
@@ -90,6 +100,21 @@ public class ProcessOcrFiles
         else
         {
             AnsiConsole.Write(new Markup($"[red]File {filePath} does not exist.[/]"));
+        }
+    }
+
+    private void DisplayValidationErrors(OcrFileValidationResult validationResult)
+    {
+        Console.Clear();
+        AnsiConsole.Markup($"[red]{validationResult.ValidationFailure}[/]");
+        Console.WriteLine();
+        AnsiConsole.Markup("If you wish to load another file please press [green]space[/] otherwise press any other key to exit");
+
+        var key = Console.ReadKey();
+        if (key.Key == ConsoleKey.Spacebar)
+        {
+            Console.Clear();
+            MainMenu();
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using BankOcr.Business.Enums;
 using BankOcr.Business.Models;
 
@@ -189,6 +190,7 @@ public class OcrService
     /// <returns></returns>
     public List<AccountNumberRow> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
     {
+        if (string.IsNullOrEmpty(ocrFileContents)) return new List<AccountNumberRow>();
         var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
         var result = new List<AccountNumberRow>();
         for (var ocrRowIndex = 0; ocrRowIndex < numberOfRows; ocrRowIndex++)
@@ -199,6 +201,39 @@ public class OcrService
 
         return  result;
     }
+
+    public OcrFileValidationResult ValidateOcrFile(string ocrFileContents)
+    {
+        var result = new OcrFileValidationResult
+        {
+            IsValid = true
+        };
+
+        if (string.IsNullOrEmpty(ocrFileContents))
+        {
+            result.IsValid = false;
+            result.ValidationFailure = "OCR file is empty";
+            return result;
+        }
+
+        if (!Regex.IsMatch(ocrFileContents, @"^[\|_\s\n]*$"))
+        {
+            result.IsValid = false;
+            result.ValidationFailure = "OCR file contains illegal characters";
+            return result;
+        }
+
+        var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
+        if (ocrFileContents.Length % CharactersPerOcrRow != 0)
+        {
+            result.IsValid = false;
+            result.ValidationFailure =
+                $"OCR file is not divisible by the expected number of characters per row ({CharactersPerOcrRow})";
+            return result;
+        }
+
+        return result;
+    } 
 
     /// <summary>
     /// Returns the segment positions for a given segment

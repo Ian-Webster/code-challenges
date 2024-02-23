@@ -22,6 +22,15 @@
     <None Update="ocr-files\illegible.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="ocr-files\invalid-bad-characters.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ocr-files\invalid-bad-row-length.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ocr-files\invalid-empty.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="ocr-files\user-story-1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

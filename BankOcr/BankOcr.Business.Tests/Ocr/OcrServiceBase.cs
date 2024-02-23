@@ -667,4 +667,130 @@ public class OcrServiceBase
             null
         ).SetName("ILL - ?00?000?1");
     }
+
+    public static IEnumerable GetValidateOcrFileFailureTestCaseData()
+    {
+        yield return new TestCaseData(
+            "",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file is empty"
+            }
+        ).SetName("Empty file");
+
+        yield return new TestCaseData(
+            null,
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file is empty"
+            }
+        ).SetName("Null contents file");
+
+        yield return new TestCaseData(
+            "123",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - 123");
+
+        yield return new TestCaseData(
+            "abc",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - abc");
+
+        yield return new TestCaseData(
+            "!%^",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - !%^");
+
+        yield return new TestCaseData(
+            "¬`+",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - ¬`");
+
+        yield return new TestCaseData(
+            "\\/",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - \\/");
+
+        yield return new TestCaseData(
+            "|_r",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = "OCR file contains illegal characters"
+            }
+        ).SetName("Illegal characters - |_r");
+
+        yield return new TestCaseData(
+            "                           \n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n" +
+            " _  _  _  _  _  _  _  _  _ \n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            "\n",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = $"OCR file is not divisible by the expected number of characters per row ({OcrService.CharactersPerOcrRow})"
+            }
+        ).SetName("Not divisible - test 1");
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n" +
+            "                           \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "  |  |  |  |  |  |  |  |  |\n" +
+            "\n" +
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            " _| _| _| _| _| _| _| _| _|\n" +
+            "\n" +
+            "    _  _     _ " +
+            "  | _| _||_||_ " +
+            "  ||_  _|  | _|" +
+            "\n",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = $"OCR file is not divisible by the expected number of characters per row ({OcrService.CharactersPerOcrRow})"
+            }
+        ).SetName("Not divisible - test 2");
+
+        yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
+            "|_||_||_||_||_||_||_||_||_|\n",
+            new OcrFileValidationResult
+            {
+                IsValid = false,
+                ValidationFailure = $"OCR file is not divisible by the expected number of characters per row ({OcrService.CharactersPerOcrRow})"
+            }
+        ).SetName("Not divisible - test 3");
+    }
 }
