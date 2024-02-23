@@ -11,7 +11,9 @@ public class GetAccountNumbersFromOcrFileContents: OcrServiceBase
         var ocrFileContents = isNull ? null : string.Empty;
 
         // Act
+#pragma warning disable CS8604 // Possible null reference argument. - deliberately testing null/empty
         var result = GetService().GetAccountNumbersFromOcrFileContents(ocrFileContents);
+#pragma warning restore CS8604 // Possible null reference argument.
 
         // Assert
         Assert.That(result, Is.Empty);

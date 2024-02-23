@@ -1,7 +1,6 @@
 ﻿using BankOcr.Business.Models;
 using Newtonsoft.Json;
 using NSubstitute;
-
 namespace BankOcr.Business.Tests.Ocr;
 
 [TestFixture]

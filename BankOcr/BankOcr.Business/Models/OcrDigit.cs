@@ -20,12 +20,12 @@ public class OcrDigit
     /// <summary>
     /// Middle can have any combination of left, right and bottom segments set.
     /// </summary>
-    public HashSet<Positions> Middle { get; set; }
+    public HashSet<Positions> Middle { get; set; } = new HashSet<Positions>();
 
     /// <summary>
     /// Bottom can have any combination of left, right and bottom segments set.
     /// </summary>
-    public HashSet<Positions> Bottom { get; set; }
+    public HashSet<Positions> Bottom { get; set; } = new HashSet<Positions>();
 
     /// <summary>
     /// Determines if the middle segment contains all of the specified positions.

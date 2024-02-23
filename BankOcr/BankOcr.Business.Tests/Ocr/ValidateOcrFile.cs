@@ -1,5 +1,4 @@
 ﻿using BankOcr.Business.Models;
-using BankOcr.Business.Services;
 using Newtonsoft.Json;
 
 namespace BankOcr.Business.Tests.Ocr;
@@ -27,5 +26,4 @@ public class ValidateOcrFile: OcrServiceBase
         // Assert
         Assert.IsTrue(result.IsValid);
     }
-
 }

@@ -42,6 +42,4 @@ jobs:
     # Execute all unit tests in the solution
     - name: Execute unit tests
       if: steps.changes.outputs.src == 'true'
-      run: dotnet test 'BankOcr/BankOcr.ConsoleApp' 
-
-    
+      run: dotnet test 'BankOcr/BankOcr.Business.Tests'

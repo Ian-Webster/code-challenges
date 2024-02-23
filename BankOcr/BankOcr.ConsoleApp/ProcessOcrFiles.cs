@@ -40,6 +40,11 @@ public class ProcessOcrFiles
     {
         // load all the file names found in the ./ocr-files directory   
         var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (assemblyDirectory == null)
+        {
+            AnsiConsole.Write(new Markup("[red]Unable to get the assembly directory[/]"));
+            return new List<string>();
+        }
         var directoryPath = Path.Combine(assemblyDirectory, "ocr-files");
         if (Directory.Exists(directoryPath))
         {
@@ -55,6 +60,11 @@ public class ProcessOcrFiles
     private void DisplayFileContents(string fileName)
     {
         var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (assemblyDirectory == null)
+        {
+            AnsiConsole.Write(new Markup("[red]Unable to get the assembly directory[/]"));
+            return;
+        }
         var filePath = Path.Combine(assemblyDirectory, "ocr-files", fileName);
         if (File.Exists(filePath))
         {
