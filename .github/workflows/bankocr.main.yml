@@ -1,4 +1,4 @@
-name: BankOCR - branch actions
+name: BankOCR - main actions
 
 on:
     push:
@@ -27,7 +27,7 @@ jobs:
 
     # Build project
     - name: Build  
-      run: dotnet build --configuration Release --no-build 'BankOcr/BankOcr.ConsoleApp' 
+      run: dotnet build --configuration Release 'BankOcr/BankOcr.ConsoleApp' 
 
     # Set an environment variable to the current data and time
     - name: Set current data as environment variable
@@ -35,7 +35,7 @@ jobs:
 
     # Create a publish of the BankOcr app
     - name: Publish BankOcr
-      run: dotnet publish --configuration Release --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
+      run: dotnet publish --configuration Release --output --no-build ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
 
     # Zip up the published build
     - name: Zip the BankOcr app
