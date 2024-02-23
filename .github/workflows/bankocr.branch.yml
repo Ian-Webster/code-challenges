@@ -51,6 +51,9 @@ jobs:
     - name: Publish BankOcr
       run: dotnet publish --configuration Release --no-build --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
 
+    - name: Zip the Build
+      run: zip -r BankOcrApp ./BankOcrApp
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
