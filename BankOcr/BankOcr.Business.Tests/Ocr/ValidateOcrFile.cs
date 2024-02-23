@@ -27,5 +27,4 @@ public class ValidateOcrFile: OcrServiceBase
         // Assert
         Assert.IsTrue(result.IsValid);
     }
-
 }
