@@ -8,7 +8,9 @@ public class AccountNumberIsValid: AccountNumberServiceBase
     public void Should_Return_False_When_AccountNumberIsNullOrEmpty(bool isNull)
     {
         // Act
+#pragma warning disable CS8604 // Possible null reference argument - deliberately testing null/empty
         var result = GetService().AccountNumberIsValid(isNull ? null : string.Empty);
+#pragma warning restore CS8604 // Possible null reference argument.
 
         // Assert
         Assert.That(result, Is.False);

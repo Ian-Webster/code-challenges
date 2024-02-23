@@ -12,7 +12,7 @@ public class AccountNumberRow
     /// If a good match for an account number is found this will be set to it
     /// In the event that there are several possible matching numbers this will be the original number retrieved from the OCR
     /// </remarks>
-    public AccountNumber Data { get; set; }
+    public AccountNumber Data { get; set; } = new AccountNumber();
 
     /// <summary>
     /// In the event that an OCR number is ambiguous this will be set to the possible matches

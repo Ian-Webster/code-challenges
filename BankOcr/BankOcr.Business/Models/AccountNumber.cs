@@ -10,7 +10,7 @@ public class AccountNumber
     /// <summary>
     /// The account number
     /// </summary>
-    public string Number { get; set; }
+    public string Number { get; set; } = string.Empty;
 
     /// <summary>
     /// The status for this account number
