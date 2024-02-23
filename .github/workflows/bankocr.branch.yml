@@ -52,9 +52,9 @@ jobs:
       run: dotnet publish --configuration Release --no-build --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
 
     - name: Archive production artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: BankOcrApp
+        name: BankOcrApp_${{ env.NOW }}
         path: ./BankOcrApp
 
     - name: Create Release
