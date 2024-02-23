@@ -46,7 +46,7 @@ jobs:
 
     # TODO remove when finished testing
     - name: Set current data as environment variable
-      run: echo "NOW=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+      run: echo "NOW=$(date +'%Y-%m-%d-%H_%M_%S')" >> $GITHUB_ENV
 
     - name: Publish BankOcr
       run: dotnet publish --configuration Release --no-build --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
