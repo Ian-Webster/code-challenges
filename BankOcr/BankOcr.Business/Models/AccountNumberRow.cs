@@ -21,5 +21,5 @@ public class AccountNumberRow
     /// If there are multiple possible matches for an account number this will be set to the possible matches
     /// If there is only a single match this will be null
     /// </remarks>
-    public List<String>? PossibleMatches { get; set; }
+    public List<string>? PossibleMatches { get; set; }
 }

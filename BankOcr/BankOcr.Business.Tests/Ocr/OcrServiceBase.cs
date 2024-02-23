@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using System.Text;
+using BankOcr.Business.Enums;
 using BankOcr.Business.Models;
 using BankOcr.Business.Services;
 using NSubstitute;
@@ -115,87 +115,6 @@ public class OcrServiceBase
         ).SetName("9");
     }
 
-    /*public static IEnumerable GetOcrNumberTestCaseData()
-    {
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "| || || || || || || || || |\n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            "\n",
-            "000000000"
-        ).SetName("Zeros");
-        yield return new TestCaseData(
-            "                           \n" +
-            "  |  |  |  |  |  |  |  |  |\n" +
-            "  |  |  |  |  |  |  |  |  |\n" +
-            "\n",
-            "111111111"
-        ).SetName("Ones");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            " _| _| _| _| _| _| _| _| _|\n" +
-            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
-            "\n",
-            "222222222"
-        ).SetName("Twos");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            " _| _| _| _| _| _| _| _| _|\n" +
-            " _| _| _| _| _| _| _| _| _|\n" +
-            "\n",
-            "333333333"
-        ).SetName("Threes");
-        yield return new TestCaseData(
-            "                           \n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            "  |  |  |  |  |  |  |  |  |\n" +
-            "\n",
-            "444444444"
-        ).SetName("Fours");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
-            " _| _| _| _| _| _| _| _| _|\n" +
-            "\n",
-            "555555555"
-        ).SetName("Fives");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "|_ |_ |_ |_ |_ |_ |_ |_ |_ \n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            "\n",
-            "666666666"
-        ).SetName("Sixes");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "  |  |  |  |  |  |  |  |  |\n" +
-            "  |  |  |  |  |  |  |  |  |\n" +
-            "\n",
-            "777777777"
-        ).SetName("Sevens");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            "\n",
-            "888888888"
-        ).SetName("Eights");
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _  _ \n" +
-            "|_||_||_||_||_||_||_||_||_|\n" +
-            " _| _| _| _| _| _| _| _| _|\n" +
-            "\n",
-            "999999999"
-        ).SetName("Nines");
-        yield return new TestCaseData(
-            "    _  _     _  _  _  _  _ \n" +
-            "  | _| _||_||_ |_   ||_||_|\n" +
-            "  ||_  _|  | _||_|  ||_| _|\n" +
-            "\n",
-            "123456789"
-        ).SetName("One to nine");
-    }*/
-
     public static IEnumerable GetOcrFileContentsTestCaseData()
     {
         yield return new TestCaseData(
@@ -251,36 +170,6 @@ public class OcrServiceBase
             new List<string> { "666666666", "444444444", "999999999", "123456789" }
         ).SetName("4 rows");
     }
-
-    /*public static IEnumerable GetInvalidNumberTestCaseData()
-    {
-        yield return new TestCaseData(
-            " _  _  _  _  _  _  _  _    \n" +
-            "| || || || || || || ||_   |\n" +
-            "|_||_||_||_||_||_||_| _|  |\n" +
-            "\n",
-            "000000051",
-            "ERR"
-        ).SetName("Valid");
-
-        yield return new TestCaseData(
-            "    _  _  _  _  _  _     _ \n" +
-            "|_||_|| || ||_   |  |  | _ \n" +
-            "  | _||_||_||_|  |  |  | _|\n" +
-            "\n",
-            "49006771?",
-            "ILL"
-        ).SetName("Last character invalid");
-
-        yield return new TestCaseData(
-            "    _  _     _  _  _  _  _ \n" +
-            "  | _| _||_| _ |_   ||_||_|\n" +
-            "  ||_  _|  | _||_|  ||_| _ \n" +
-            "\n",
-            "1234?678?",
-            "ILL"
-        ).SetName("Multiple invalid characters");
-    }*/
 
     public static IEnumerable GetAccountValidationTestCaseData()
     {
@@ -440,7 +329,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "711111111",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "711111111" }
@@ -456,7 +345,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "777777177",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "777777177" }
@@ -472,7 +361,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "200800000",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "200800000" }
@@ -488,7 +377,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "333393333",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "333393333" }
@@ -504,7 +393,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "888888888",
-                    Status = "AMB"
+                    Status = AccountNumberStatus.Ambiguous
                 },
                 PossibleMatches = new List<string> { "888886888", "888888880", "888888988" }
             },
@@ -521,7 +410,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "555555555",
-                    Status = "AMB"
+                    Status = AccountNumberStatus.Ambiguous
                 },
                 PossibleMatches = new List<string> { "555655555", "559555555" }
             },
@@ -538,7 +427,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "666666666",
-                    Status = "AMB"
+                    Status = AccountNumberStatus.Ambiguous
                 },
                 PossibleMatches = new List<string> { "666566666", "686666666" }
             },
@@ -555,7 +444,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "999999999",
-                    Status = "AMB"
+                    Status = AccountNumberStatus.Ambiguous
                 },
                 PossibleMatches = new List<string> { "899999999", "993999999", "999959999" }
             },
@@ -572,7 +461,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "490067715",
-                    Status = "AMB"
+                    Status = AccountNumberStatus.Ambiguous
                 },
                 PossibleMatches = new List<string> { "490067115", "490067719", "490867715" }
             },
@@ -589,7 +478,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "123456789",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "123456789" }
@@ -605,7 +494,7 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "000000051",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "000000051" }
@@ -621,11 +510,10 @@ public class OcrServiceBase
                 Data = new Models.AccountNumber()
                 {
                     Number = "490867715",
-                    Status = "Ok"
+                    Status = AccountNumberStatus.Ok
                 }
             },
             new List<string> { "490867715" }
         ).SetName("490867715");
     }
-
 }

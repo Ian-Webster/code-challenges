@@ -27,31 +27,23 @@ public class OcrDigit
     /// </summary>
     public HashSet<Positions> Bottom { get; set; }
 
-    public void SetMiddle(params Positions[] positions)
-    {
-        foreach (var position in positions)
-        {
-            Middle.Add(position);
-        }
-    }
-
-    public void SetBottom(params Positions[] positions)
-    {
-        foreach (var position in positions)
-        {
-            Bottom.Add(position);
-        }
-    }
-
+    /// <summary>
+    /// Determines if the middle segment contains all of the specified positions.
+    /// </summary>
+    /// <param name="positions"></param>
+    /// <returns></returns>
     public bool MiddleContains(params Positions[] positions)
     {
         return Middle.SetEquals(positions);
-        //return positions.All(position => Middle.Contains(position));
     }
 
+    /// <summary>
+    /// Determines if the bottom segment contains all of the specified positions.
+    /// </summary>
+    /// <param name="positions"></param>
+    /// <returns></returns>
     public bool BottomContains(params Positions[] positions)
     {
         return Bottom.SetEquals(positions);
-        //return positions.All(position => Bottom.Contains(position));
     }
 }

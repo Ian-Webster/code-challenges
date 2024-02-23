@@ -71,7 +71,7 @@ public class ProcessOcrFiles
             // Add some rows
             accountNumbers.ForEach(accountNumber => table.AddRow(
                 accountNumber.Data.Number, 
-                accountNumber.Data.Status != null ? accountNumber.Data.Status != "Ok"? accountNumber.Data.Status : string.Empty : string.Empty,
+                accountNumber.Data.StatusFriendlyMessage,
                 accountNumber.PossibleMatches != null ? string.Join(", ", accountNumber.PossibleMatches) : string.Empty)
             );
 

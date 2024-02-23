@@ -130,13 +130,13 @@ public class OcrService
             if (guessedNumbers != null)
             {
                 // we managed to make some guesses
-                result = SetNumberGuesses(result, guessedNumbers);
+                result = ValidateGuessAndUpdateRow(result, guessedNumbers);
 
                 // we found a single valid guess
-                if (result.Data.Status == "Ok") return result;
+                if (result.Data.Status == AccountNumberStatus.Ok) return result;
 
                 // we found multiple matches
-                if (result.Data.Status == "AMB") return result;
+                if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
 
                 /*// check if any of them are a valid account number
                 var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
@@ -160,7 +160,7 @@ public class OcrService
         if (result.Data.Number.Contains('?'))
         {
             // invalid character and didn't guess any alternatives
-            result.Data.Status = "ILL";
+            result.Data.Status = AccountNumberStatus.Illegible;
             return result;
         }
 
@@ -173,17 +173,17 @@ public class OcrService
         if (guessedNumbers != null)
         {
             // we managed to make some guesses
-            result = SetNumberGuesses(result, guessedNumbers);
+            result = ValidateGuessAndUpdateRow(result, guessedNumbers);
 
             // we found a single valid guess
-            if (result.Data.Status == "Ok") return result;
+            if (result.Data.Status == AccountNumberStatus.Ok) return result;
 
             // we found multiple valid guesses
-            if (result.Data.Status == "AMB") return result;
+            if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
         }
 
         // failed to guess any valid alternatives
-        result.Data.Status = "ERR";
+        result.Data.Status = AccountNumberStatus.Error;
         return result;
     }
 
@@ -337,15 +337,21 @@ public class OcrService
         var variations = new List<OcrDigit>
         {
             // Generate variations for the top segment
+            // The top segment can only ever have Positions.None or Positions.Bottom set
+            // So we can just flip the value here
             new() { Top = !original.Top, Middle = original.Middle, Bottom = original.Bottom }
         };
+
+        // Middle and bottom segments can have any combination of left, right and bottom segments set
+        // So we need to generate all possible combinations of the segments
 
         // Generate variations for the middle segment
         foreach (Positions position in Enum.GetValues(typeof(Positions)))
         {
-            if (position == Positions.None) continue;
+            if (position == Positions.None) continue; // changing the segment to none won't yield a valid digit so we can skip it
 
             var newMiddle = new HashSet<Positions>(original.Middle);
+
             if (newMiddle.Contains(position))
             {
                 newMiddle.Remove(position);
@@ -409,31 +415,36 @@ public class OcrService
         return result.Any() ? result : null;
     }
 
-    private AccountNumberRow SetNumberGuesses(AccountNumberRow data, List<string> guessedNumbers)
+    /// <summary>
+    /// Validates the given guesses to see if any are valid and sets the given account row data accordingly
+    /// </summary>
+    /// <remarks>
+    /// If no valid matches the method will return the account row data unchanged
+    /// If a single valid match is found the account number will be replaced with the valid match and the status set to "Ok"
+    /// If there are multiple valid matches the possible matches will be set and the status set to "AMB"
+    /// </remarks>
+    /// <param name="data"></param>
+    /// <param name="guessedNumbers"></param>
+    /// <returns></returns>
+    private AccountNumberRow ValidateGuessAndUpdateRow(AccountNumberRow data, List<string> guessedNumbers)
     {
-        // check if any of them are a valid account number
+        // Check if any of the guesses are valid account numbers
         var validAccounts = _accountNumberService.GetValidAccountNumbers(guessedNumbers);
 
-        // didn't find any valid guesses
+        // Didn't find any valid guesses
         if (validAccounts == null || !validAccounts.Any()) return data;
 
         if (validAccounts.Count == 1)
         {
             // we got a valid match - replace the number with the valid match and return the data
             data.Data.Number = validAccounts.First();
-            data.Data.Status = "Ok";
+            data.Data.Status = AccountNumberStatus.Ok;
             return data;
         }
 
         // we got more than one valid guess - return with the possible matches and a state of ambiguous
         data.PossibleMatches = validAccounts;
-        data.Data.Status = "AMB";
+        data.Data.Status = AccountNumberStatus.Ambiguous;
         return data;
-
-        /*
-        // none of the matches were valid, return with the possible matches and a state of ambiguous
-        result.PossibleMatches = guessedNumbers;
-        result.Data.Status = "AMB";
-        return result;*/
     }
 }

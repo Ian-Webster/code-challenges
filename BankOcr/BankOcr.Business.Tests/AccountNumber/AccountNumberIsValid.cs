@@ -7,7 +7,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
 {
     [TestCase(true)]
     [TestCase(false)]
-    public void Should_ReturnFalse_WhenAccountNumberIsNullOrEmpty(bool isNull)
+    public void Should_Return_False_When_AccountNumberIsNullOrEmpty(bool isNull)
     {
         // Act
         var result = GetService().AccountNumberIsValid(isNull ? null : string.Empty);
@@ -18,7 +18,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
 
     [TestCase("123")]
     [TestCase("1234567890")]
-    public void Should_ReturnFalse_WhenAccountNumberIsWrongLength(string accountNumber)
+    public void Should_Return_False_When_AccountNumberIsWrongLength(string accountNumber)
     {
         // Act
         var result = GetService().AccountNumberIsValid(accountNumber);
@@ -29,7 +29,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
 
     [TestCase("abcdefghi")]
     [TestCase("_=+()!£$%")]
-    public void Should_ReturnFalse_WhenAccountNumberIsWNumeric(string accountNumber)
+    public void Should_Return_False_When_AccountNumberIsNotNumeric(string accountNumber)
     {
         // Act
         var result = GetService().AccountNumberIsValid(accountNumber);
@@ -41,7 +41,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
     [TestCase("711111111")]
     [TestCase("123456789")]
     [TestCase("490867715")]
-    public void Should_ReturnTrue_WhenAccountNumberIsValid(string accountNumber)
+    public void Should_Return_True_When_AccountNumberIsValid(string accountNumber)
     {
         // Act
         var result = GetService().AccountNumberIsValid(accountNumber);
@@ -53,7 +53,7 @@ public class AccountNumberIsValid: AccountNumberServiceBase
     [TestCase("888888888")]
     [TestCase("490067715")]
     [TestCase("012345678")]
-    public void Should_ReturnFalse_WhenAccountNumberIsInValid(string accountNumber)
+    public void Should_Return_False_When_AccountNumberIsInValid(string accountNumber)
     {
         // Act
         var result = GetService().AccountNumberIsValid(accountNumber);
