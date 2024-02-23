@@ -35,7 +35,7 @@ jobs:
 
     # Create a publish of the BankOcr app
     - name: Publish BankOcr
-      run: dotnet publish --configuration Release --output --no-build ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
+      run: dotnet publish --configuration Release --no-build --output ./BankOcrApp 'BankOcr/BankOcr.ConsoleApp'
 
     # Zip up the published build
     - name: Zip the BankOcr app
