@@ -40,14 +40,14 @@ public class OcrService
         var segments = ocrDigit.Split("\n");
         var digit = new OcrDigit
         {
-            Top = segments[0].Contains('_'),
+            Top = segments[0].Contains('_'), // top segment can only have (or not have) an underscore
             Middle = new HashSet<Positions>(GetSegmentPositions(segments[1])),
             Bottom = new HashSet<Positions>(GetSegmentPositions(segments[2]))
         };
 
         var result = ParseOcrDigitSegments(digit);
 
-        return result ?? '?';
+        return result ?? '?'; // if the result is null we couldn't determine the digit, return illegal character instead
     }
 
     /// <summary>
@@ -81,10 +81,12 @@ public class OcrService
             var result = ParseOcrDigitSegments(variation);
             if (result != null)
             {
+                // digit was valid, add it to the list
                 possibleDigits.Add(result.Value);
             }
         }
 
+        // return any valid digits we found otherwise if we found none return null
         return possibleDigits.Any()? possibleDigits : null;
     }
 
@@ -99,22 +101,22 @@ public class OcrService
     /// <returns></returns>
     public AccountNumberRow ConvertOcrNumberToAccountNumber(string orcRow)
     {
-        var rowSegments = orcRow.Split("\n");
+        var rowSegments = orcRow.Split("\n"); // we expect 4 segments, 3 for the digits and 1 for the blank line
         var accountNumber = new StringBuilder();
         var digitOcr = new StringBuilder();
         var digits = new List<(int Index, string DigitOcr, bool IsBad)>();
-        for (var digitIndex = 0; digitIndex < 9; digitIndex++)
+        for (var digitIndex = 0; digitIndex < 9; digitIndex++) // each row should be 9 digits long
         {
             // read a digit from the row, we need i*3 characters from the first three lines
             for (var lineIndex = 0; lineIndex < 3; lineIndex++)
             {
                 digitOcr.Append($"{rowSegments[lineIndex].Substring(digitIndex * 3, 3)}\n");
             }
-            var ocrString = digitOcr.ToString();
-            var parsedDigit = ConvertOcrDigitToNumber(ocrString);
-            digits.Add((digitIndex, digitOcr.ToString(), parsedDigit == '?'));
-            accountNumber.Append(parsedDigit);
-            digitOcr.Clear();
+            var ocrString = digitOcr.ToString(); // capture the OCR string for the digit
+            var parsedDigit = ConvertOcrDigitToNumber(ocrString); // attempt to parse the digit
+            digits.Add((digitIndex, digitOcr.ToString(), parsedDigit == '?')); // track the digits so if we need to make guesses later we know where each one belongs
+            accountNumber.Append(parsedDigit); // append the parsed digit to the account number
+            digitOcr.Clear(); // reset the string builder for the next digit
         }
 
         var result = new AccountNumberRow
@@ -128,13 +130,16 @@ public class OcrService
 
         List<string>? guessedNumbers;
 
+        // check if we had any bad digits
         if (digits.Any(d => d.IsBad))
         {
+            // we had some bad digits, try to guess some alternatives
             guessedNumbers = GuessAlternativeAccountNumbers(digits
                 .Where(d => d.IsBad)
                 .ToDictionary(key => key.Index, v => v.DigitOcr), 
                 result.Data.Number);
 
+            // check if we managed to guess any valid alternatives
             if (guessedNumbers != null)
             {
                 // we managed to make some guesses
@@ -190,11 +195,12 @@ public class OcrService
     /// <returns></returns>
     public List<AccountNumberRow> GetAccountNumbersFromOcrFileContents(string ocrFileContents)
     {
-        if (string.IsNullOrEmpty(ocrFileContents)) return new List<AccountNumberRow>();
+        if (string.IsNullOrEmpty(ocrFileContents)) return new List<AccountNumberRow>(); // ignore empty strings
         var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
         var result = new List<AccountNumberRow>();
         for (var ocrRowIndex = 0; ocrRowIndex < numberOfRows; ocrRowIndex++)
         {
+            // iterate each row and convert it to an account number
             var ocrRow = ocrFileContents.Substring(ocrRowIndex * CharactersPerOcrRow, CharactersPerOcrRow);
             result.Add(ConvertOcrNumberToAccountNumber(ocrRow));
         }
@@ -202,6 +208,17 @@ public class OcrService
         return  result;
     }
 
+    /// <summary>
+    /// Validates the contents of an OCR file
+    /// </summary>
+    /// <remarks>
+    /// Will check for;
+    /// empty/ null string
+    /// illegal characters
+    /// that the file is divisible by the expected number of characters per row
+    /// </remarks>
+    /// <param name="ocrFileContents"></param>
+    /// <returns></returns>
     public OcrFileValidationResult ValidateOcrFile(string ocrFileContents)
     {
         var result = new OcrFileValidationResult
@@ -223,7 +240,6 @@ public class OcrService
             return result;
         }
 
-        var numberOfRows = ocrFileContents.Length / CharactersPerOcrRow;
         if (ocrFileContents.Length % CharactersPerOcrRow != 0)
         {
             result.IsValid = false;
@@ -379,6 +395,7 @@ public class OcrService
 
             var newMiddle = new HashSet<Positions>(original.Middle);
 
+            // if the segment is already set we remove it, if it's not set we add it
             if (newMiddle.Contains(position))
             {
                 newMiddle.Remove(position);
@@ -388,6 +405,7 @@ public class OcrService
                 newMiddle.Add(position);
             }
 
+            // add the new variation to the list
             variations.Add(new OcrDigit { Top = original.Top, Middle = newMiddle, Bottom = original.Bottom });
         }
 
@@ -418,8 +436,8 @@ public class OcrService
     /// <remarks>
     /// If this code fails to generate any alternative numbers will return null
     /// </remarks>
-    /// <param name="digits"></param>
-    /// <param name="accountNumber"></param>
+    /// <param name="digits">the list of OCR digits along with their index in the account number</param>
+    /// <param name="accountNumber">the original account number as initially  parsed</param>
     /// <returns></returns>
     private List<string>? GuessAlternativeAccountNumbers(Dictionary<int, string> digits, string accountNumber)
     {

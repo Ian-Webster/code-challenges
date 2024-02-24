@@ -62,7 +62,7 @@ public class ProcessOcrFiles
         var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (assemblyDirectory == null)
         {
-            AnsiConsole.Write(new Markup("[red]Unable to get the assembly directory[/]"));
+            AnsiConsole.Write(new Markup("[red]Unable to read the file[/]"));
             return;
         }
         var filePath = Path.Combine(assemblyDirectory, "ocr-files", fileName);
