@@ -392,7 +392,7 @@ public class OcrService
         // Middle and bottom segments can have any combination of left, right and bottom segments set
         // So we need to generate all possible combinations of the segments
 
-        // Generate variations for the middle segment
+        // Generate variations for the middle and bottom segments
         foreach (Positions position in Enum.GetValues(typeof(Positions)))
         {
             if (position == Positions.None) continue; // changing the segment to none won't yield a valid digit so we can skip it
@@ -411,13 +411,8 @@ public class OcrService
 
             // add the new variation to the list
             variations.Add(new OcrDigit { Top = original.Top, Middle = newMiddle, Bottom = original.Bottom });
-        }
 
-        // Generate variations for the bottom segment
-        foreach (Positions position in Enum.GetValues(typeof(Positions)))
-        {
-            if (position == Positions.None) continue;
-
+            // repeat the process for the bottom segment
             var newBottom = new HashSet<Positions>(original.Bottom);
             if (newBottom.Contains(position))
             {
