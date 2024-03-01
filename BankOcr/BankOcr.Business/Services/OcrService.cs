@@ -119,60 +119,18 @@ public class OcrService
             digitOcr.Clear(); // reset the string builder for the next digit
         }
 
-        var result = new AccountNumberRow
+        var result = new AccountNumberRow { Data = new AccountNumber { Number = accountNumber.ToString(), Status = AccountNumberStatus.Error} };
+
+        // is the number valid?
+        if (!digits.Any(c => c.IsBad) && _accountNumberService.AccountNumberIsValid(result.Data.Number))
         {
-            Data = new AccountNumber
-            {
-                Number = accountNumber.ToString(), 
-                Status = AccountNumberStatus.Error // assume error as the default status
-            }
-        };
-
-        List<string>? guessedNumbers;
-
-        // check if we had any bad digits
-        if (digits.Any(d => d.IsBad))
-        {
-            // we had some bad digits, try to guess some alternatives
-            guessedNumbers = GuessAlternativeAccountNumbers(digits
-                .Where(d => d.IsBad)
-                .ToDictionary(key => key.Index, v => v.DigitOcr), 
-                result.Data.Number);
-
-            // check if we managed to guess any valid alternatives
-            if (guessedNumbers != null)
-            {
-                // we managed to make some guesses
-                result = ValidateGuessAndUpdateRow(result, guessedNumbers);
-
-                // we found a single valid guess
-                if (result.Data.Status == AccountNumberStatus.Ok) return result;
-
-                // we found multiple matches
-                if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
-            }
-        }
-
-        // we either didn't have any bad digits or we couldn't guess any valid replacements
-
-        // check if we had any invalid characters fall through the attempt to find alternatives
-        if (result.Data.Number.Contains('?'))
-        {
-            // invalid character and didn't guess any alternatives
-            result.Data.Status = AccountNumberStatus.Illegible;
-            return result;
-        }
-
-        // check if the account number is valid - if it is return
-        if (_accountNumberService.AccountNumberIsValid(result.Data.Number))
-        {
+            // account number is valid return ok
             result.Data.Status = AccountNumberStatus.Ok;
             return result;
         }
 
-        // account number is invalid
-        // have a go at guessing some alternatives and see if any of them are valid
-        guessedNumbers = GuessAlternativeAccountNumbers(digits.ToDictionary(key => key.Index, v => v.DigitOcr), result.Data.Number);
+        // number is invalid or has bad digits - we'll have to try and guess some alternatives
+        var guessedNumbers = GuessAlternativeAccountNumbers(digits.ToDictionary(key => key.Index, v => v.DigitOcr), result.Data.Number);
         if (guessedNumbers != null)
         {
             // we managed to make some guesses
@@ -185,7 +143,16 @@ public class OcrService
             if (result.Data.Status == AccountNumberStatus.Ambiguous) return result;
         }
 
-        // failed to guess any valid alternatives, return what we have
+        // check if we had any invalid characters fall through the attempt to find alternatives
+        if (result.Data.Number.Contains('?'))
+        {
+            // invalid character and didn't guess any alternatives
+            result.Data.Status = AccountNumberStatus.Illegible;
+            return result;
+        }
+
+        // must be a bad number
+        result.Data.Status = AccountNumberStatus.Error;
         return result;
     }
 
