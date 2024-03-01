@@ -1,7 +1,7 @@
-﻿namespace BankOcr.Business.Tests.AccountNumber;
+﻿namespace BankOcr.Business.Tests.Services.AccountNumber;
 
 [TestFixture]
-public class AccountNumberIsValid: AccountNumberServiceBase
+public class AccountNumberIsValid : AccountNumberServiceBase
 {
     [TestCase(true)]
     [TestCase(false)]

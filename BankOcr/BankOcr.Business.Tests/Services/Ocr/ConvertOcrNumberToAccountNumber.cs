@@ -1,10 +1,10 @@
 ﻿using BankOcr.Business.Models;
 using Newtonsoft.Json;
 using NSubstitute;
-namespace BankOcr.Business.Tests.Ocr;
+namespace BankOcr.Business.Tests.Services.Ocr;
 
 [TestFixture]
-public class ConvertOcrNumberToAccountNumber: OcrServiceBase
+public class ConvertOcrNumberToAccountNumber : OcrServiceBase
 {
     [TestCaseSource(nameof(GetAccountValidationTestCaseData))]
     public void Should_Call_AccountNumberService_AccountNumberIsValid_WithExpectedData(string ocrNumber,

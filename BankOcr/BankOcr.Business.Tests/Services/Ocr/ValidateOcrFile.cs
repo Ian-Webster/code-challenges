@@ -1,10 +1,10 @@
 ﻿using BankOcr.Business.Models;
 using Newtonsoft.Json;
 
-namespace BankOcr.Business.Tests.Ocr;
+namespace BankOcr.Business.Tests.Services.Ocr;
 
 [TestFixture]
-public class ValidateOcrFile: OcrServiceBase
+public class ValidateOcrFile : OcrServiceBase
 {
     [TestCaseSource(nameof(GetValidateOcrFileFailureTestCaseData))]
     public void Should_Return_ExpectedFailedValidationResponse_WhenOcrFileIsInvalid(string ocrFileContents,

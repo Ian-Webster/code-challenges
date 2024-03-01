@@ -1,7 +1,7 @@
-﻿namespace BankOcr.Business.Tests.Ocr;
+﻿namespace BankOcr.Business.Tests.Services.Ocr;
 
 [TestFixture]
-public class GetAccountNumbersFromOcrFileContents: OcrServiceBase
+public class GetAccountNumbersFromOcrFileContents : OcrServiceBase
 {
     [TestCase(true)]
     [TestCase(false)]
