@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using BankOcr.Business.Services;
 
-namespace BankOcr.Business.Tests.AccountNumber;
+namespace BankOcr.Business.Tests.Services.AccountNumber;
 
 public class AccountNumberServiceBase
 {
@@ -13,7 +13,7 @@ public class AccountNumberServiceBase
     protected static IEnumerable GetValidAccountNumberTestCaseData()
     {
         yield return new TestCaseData(
-            new List<string> { "888888888", "490067715", "012345678" }, 
+            new List<string> { "888888888", "490067715", "012345678" },
             null
         ).SetName("All invalid");
 

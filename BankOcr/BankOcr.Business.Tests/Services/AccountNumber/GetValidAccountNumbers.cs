@@ -1,7 +1,7 @@
-﻿namespace BankOcr.Business.Tests.AccountNumber;
+﻿namespace BankOcr.Business.Tests.Services.AccountNumber;
 
 [TestFixture]
-public class GetValidAccountNumbers: AccountNumberServiceBase
+public class GetValidAccountNumbers : AccountNumberServiceBase
 {
     [TestCaseSource(nameof(GetValidAccountNumberTestCaseData))]
     public void Should_Return_ExpectedResult(List<string> accountNumbers, List<string> expected)

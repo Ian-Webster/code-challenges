@@ -1,13 +1,13 @@
-﻿namespace BankOcr.Business.Tests.Ocr;
+﻿namespace BankOcr.Business.Tests.Models.OcrDigit;
 
 [TestFixture]
-public class GuessOcrDigit: OcrServiceBase
+public class GuessOcrDigit : OcrDigitBase
 {
     [TestCaseSource(nameof(GetOcrDigitInvalidGuessTestCaseData))]
     public void Should_Return_ExpectedGuesses(string ocrDigit, List<char> expectedGuesses)
     {
         // Act
-        var result = GetService().GuessOcrDigit(ocrDigit);
+        var result = Business.Models.OcrDigit.GuessOcrDigit(ocrDigit);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -18,7 +18,7 @@ public class GuessOcrDigit: OcrServiceBase
     public void Should_Return_Null_WhenCharacterIsIllegible(string ocrDigit)
     {
         // Act
-        var result = GetService().GuessOcrDigit(ocrDigit);
+        var result = Business.Models.OcrDigit.GuessOcrDigit(ocrDigit);
 
         // Assert
         Assert.That(result, Is.Null);
