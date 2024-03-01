@@ -164,7 +164,11 @@ public class OcrService
         }
 
         // check if the account number is valid - if it is return
-        if (_accountNumberService.AccountNumberIsValid(result.Data.Number)) return result;
+        if (_accountNumberService.AccountNumberIsValid(result.Data.Number))
+        {
+            result.Data.Status = AccountNumberStatus.Ok;
+            return result;
+        }
 
         // account number is invalid
         // have a go at guessing some alternatives and see if any of them are valid

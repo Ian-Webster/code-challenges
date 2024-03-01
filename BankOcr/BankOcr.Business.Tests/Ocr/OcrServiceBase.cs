@@ -374,6 +374,22 @@ public class OcrServiceBase
     public static IEnumerable GetOcrNumberTestCaseData()
     {
         yield return new TestCaseData(
+            " _  _  _  _  _  _  _  _  _ \n" +
+            "| || || || || || || || || |\n" +
+            "|_||_||_||_||_||_||_||_||_|\n" +
+            "\n",
+            new AccountNumberRow
+            {
+                Data = new Models.AccountNumber()
+                {
+                    Number = "000000000",
+                    Status = AccountNumberStatus.Ok
+                }
+            },
+            new List<string> { "000000000" }
+        ).SetName("OK - 000000000");
+
+        yield return new TestCaseData(
             "                           \n" +
             "  |  |  |  |  |  |  |  |  |\n" +
             "  |  |  |  |  |  |  |  |  |\n" +
